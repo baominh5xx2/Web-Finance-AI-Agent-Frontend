@@ -26,12 +26,6 @@ export default function NotFound() {
           Về trang chủ
         </Link>
       </div>
-      <div className="mt-12 text-center">
-        <p className="text-gray-500">
-          Nếu bạn nghĩ đây là lỗi, vui lòng liên hệ với chúng tôi qua email: 
-        </p>
-      </div>
-      
       <div className="mt-8 flex space-x-4">
         {[...Array(5)].map((_, i) => (
           <div 

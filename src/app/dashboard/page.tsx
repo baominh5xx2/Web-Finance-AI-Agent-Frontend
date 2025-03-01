@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { showNotFoundPage } from '@/utils/notFoundHelper';
-import MarketIndices from '@/components/MarketIndices';
-import StockTreeMap from '@/components/StockTreeMap';
+import MarketIndices from '@/components/market-watch/MarketIndices';
+import StockTreeMap from '@/components/StockTreeMap/StockTreeMap';
 import './dashboard.css';
 
 export default function DashboardPage() {
