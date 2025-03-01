@@ -1,11 +1,14 @@
 .stock-treemap-container {
   width: 100%;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-  background-color: gray;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   padding: 0;
+  position: relative;
+  display: block;
+  clear: both;
 }
 
 .stock-treemap-title {
@@ -20,6 +23,13 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  position: relative;
+}
+
+.stock-treemap-wrapper svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* Responsive */

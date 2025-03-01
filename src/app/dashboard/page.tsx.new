@@ -1,9 +1,0 @@
-'use client';
-
-export default function DashboardPage() {
-  return (
-    <main className="p-4 bg-white min-h-screen">
-      {/* Empty dashboard with white background */}
-    </main>
-  );
-}

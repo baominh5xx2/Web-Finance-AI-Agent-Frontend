@@ -3,30 +3,42 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 2rem;
+  padding: 20px;
   margin-left: 200px; /* Chừa chỗ cho sidebar có width 200px */
   background-color: #f8fafc;
-}
-
-@media (max-width: 768px) {
-  .dashboard-container {
-    margin-left: 0; /* Trên mobile không cần chừa chỗ cho sidebar */
-    padding: 1rem;
-  }
+  overflow-x: hidden;
 }
 
 .dashboard-title {
-  font-size: 2rem;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
   font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 2rem;
+  color: #333;
 }
 
 .dashboard-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 20px;
   width: 100%;
+}
+
+/* Fix mobile layout */
+@media (max-width: 768px) {
+  .dashboard-container {
+    margin-left: 0; /* Trên mobile không cần chừa chỗ cho sidebar */
+    padding: 16px;
+  }
+  
+  .dashboard-content {
+    gap: 16px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  .dashboard-container {
+    padding: 30px;
+  }
 }
 
 .dashboard-content p {
@@ -34,12 +46,41 @@
   line-height: 1.6;
 }
 
-/* Market indices styles */
 .market-indices-container {
   width: 100%;
   overflow: hidden;
-  margin-bottom: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  padding: 16px;
   position: relative;
+  margin-bottom: 20px;
+}
+
+.dashboard-bottom-section {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* On mobile, stack the bottom section vertically */
+@media (max-width: 768px) {
+  .dashboard-bottom-section {
+    flex-direction: column;
+  }
+}
+
+/* On desktop, place them side by side */
+@media (min-width: 769px) {
+  .dashboard-bottom-section {
+    flex-direction: row;
+  }
+  
+  .dashboard-bottom-section > div {
+    width: 50%;
+    flex: 1;
+  }
 }
 
 .market-indices-scroll {
@@ -241,6 +282,7 @@
   border-radius: 0.5rem;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: auto; /* Add this line to position market stats at the bottom */
   margin-bottom: 1.5rem;
 }
 
@@ -344,4 +386,33 @@
 
 .mover-change.negative {
   color: #ef4444;
+}
+
+/* SmartTradeRecommendations styles */
+.recommendation-card {
+  transition: transform 0.2s;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Slider navigation */
+.nav-button {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.nav-button svg {
+  width: 24px;
+  height: 24px;
+  fill: #555;
 }

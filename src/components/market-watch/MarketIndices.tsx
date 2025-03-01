@@ -282,7 +282,7 @@ export default function MarketIndices() {
   };
 
   return (
-    <div className="market-indices-container">
+    <div className="market-indices-container" style={{ height: 'fit-content', maxHeight: '500px' }}>
       {/* Nút cuộn sang trái */}
       <button 
         className="scroll-button left" 

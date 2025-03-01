@@ -1,0 +1,28 @@
+.news-list {
+  overflow-y: auto;
+  max-height: 500px;
+  scrollbar-width: thin;
+}
+
+.news-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.news-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.news-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.news-list::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.date-icon {
+  display: flex;
+  align-items: center;
+}
