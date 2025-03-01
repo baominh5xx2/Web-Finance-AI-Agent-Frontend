@@ -154,18 +154,26 @@ export default function StockTreeMap({ width = '100%', height = 800 }) {
       .attr("height", dimensions.height);
 
     // Tạo root hierarchy
-    const root = d3.hierarchy(fakeData)
-      .sum(d => (d as any).value || 0);
+    const root = d3.hierarchy<TreemapData>(fakeData)
+      .sum(d => {
+        // Handle the different levels of the hierarchy
+        if ('value' in d) {
+          return (d as any as StockData).value;
+        }
+        return 0;
+      });
 
     // Tạo treemap layout
-    d3.treemap()
+    const treemapGenerator = d3.treemap<TreemapData>()
       .size([dimensions.width, dimensions.height - 30]) // Để lại không gian cho thanh thống kê bên dưới
       .paddingTop(0)
       .paddingRight(1)
       .paddingBottom(1)
       .paddingLeft(1)
-      .paddingInner(1)
-      (root);
+      .paddingInner(1);
+
+    // Apply the treemap generator to the root
+    treemapGenerator(root);
 
     // Vẽ các hình chữ nhật
     const cells = svg.selectAll("g")
