@@ -163,10 +163,10 @@ export default function StockTreeMap({ width = '100%', height = 800 }) {
 
     // Tạo root hierarchy
     const root = d3.hierarchy<TreemapData>(fakeData)
-      .sum(d => {
+      .sum((d: TreemapData | StockData) => {
         // Handle the different levels of the hierarchy
         if ('value' in d) {
-          return (d as any as StockData).value;
+          return (d as StockData).value;
         }
         return 0;
       });
@@ -188,17 +188,17 @@ export default function StockTreeMap({ width = '100%', height = 800 }) {
       .data(root.descendants() as TreemapNode[])
       .enter()
       .append("g")
-      .attr("transform", d => `translate(${d.x0},${d.y0})`);
+      .attr("transform", (d: TreemapNode) => `translate(${d.x0},${d.y0})`);
 
     // Vẽ các group rectangles
     cells
-      .filter(d => d.depth === 1)
+      .filter((d: TreemapNode) => d.depth === 1)
       .append("rect")
-      .attr("width", d => d.x1 - d.x0)
-      .attr("height", d => d.y1 - d.y0)
-      .attr("fill", d => {
+      .attr("width", (d: TreemapNode) => d.x1 - d.x0)
+      .attr("height", (d: TreemapNode) => d.y1 - d.y0)
+      .attr("fill", (d: TreemapNode) => {
         // Lấy màu của nhóm dựa trên màu của cổ phiếu con đầu tiên
-        const children = (d.data as any).children;
+        const children = (d.data as StockGroup).children;
         if (children && children.length > 0) {
           return children[0].color;
         }
@@ -208,18 +208,32 @@ export default function StockTreeMap({ width = '100%', height = 800 }) {
       .attr("stroke", "#000")
       .attr("stroke-width", 0.5);
 
+    // Thêm nhãn cho các nhóm
+    cells
+      .filter((d: TreemapNode) => d.depth === 1)
+      .append("text")
+      .attr("x", 4)
+      .attr("y", 14)
+      .attr("fill", "white")
+      .attr("font-weight", "bold")
+      .attr("font-size", "12px")
+      .text((d: TreemapNode) => (d.data as StockGroup).name);
+
     // Vẽ các ô cho leaf nodes (cổ phiếu)
     cells
-      .filter(d => d.depth > 1)
+      .filter((d: TreemapNode) => d.depth > 1)
       .append("rect")
-      .attr("width", d => d.x1 - d.x0)
-      .attr("height", d => d.y1 - d.y0)
-      .attr("fill", d => (d.data as any).color || "#ccc")
+      .attr("width", (d: TreemapNode) => d.x1 - d.x0)
+      .attr("height", (d: TreemapNode) => d.y1 - d.y0)
+      .attr("fill", (d: TreemapNode) => {
+        const change = (d.data as StockData).change;
+        return change >= 0 ? "#00C957" : "#FF4500";
+      })
       .attr("stroke", "#fff")
       .attr("stroke-width", 0.5);
 
     // Thêm tên và giá trị cho các cổ phiếu
-    const stockCells = cells.filter(d => d.depth > 1);
+    const stockCells = cells.filter((d: TreemapNode) => d.depth > 1);
     
     // Kiểm tra kích thước ô để quyết định cách hiển thị chữ
     stockCells.each(function(d: TreemapNode) {
@@ -237,7 +251,7 @@ export default function StockTreeMap({ width = '100%', height = 800 }) {
         .attr("fill", "#000")
         .attr("font-weight", "bold")
         .attr("font-size", cellWidth < 60 ? "10px" : "14px")
-        .text(d => (d.data as any).name);
+        .text((d: TreemapNode) => (d.data as StockData).name);
       
       // Giá trị cổ phiếu ở dưới tên
       cell
@@ -248,7 +262,7 @@ export default function StockTreeMap({ width = '100%', height = 800 }) {
         .attr("dominant-baseline", "middle")
         .attr("fill", "#000")
         .attr("font-size", cellWidth < 60 ? "8px" : "12px")
-        .text(d => `${(d.data as any).value} tỷ`);
+        .text((d: TreemapNode) => `${(d.data as StockData).value} tỷ`);
     });
 
     // Thanh thống kê ở dưới
