@@ -1,0 +1,22 @@
+.env
+node_modules/
+.next/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Các file môi trường khác
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Cache
+.swc/
+.eslintcache
+
+# Files hệ điều hành
+.DS_Store
+Thumbs.db
