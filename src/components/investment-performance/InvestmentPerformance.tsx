@@ -198,7 +198,7 @@ const InvestmentPerformance: React.FC<InvestmentPerformanceProps> = ({ width = '
 
     // Add Y axis
     svg.append('g')
-      .call(d3.axisLeft(y).tickFormat(d => `${d.toFixed(0)}%`))
+      .call(d3.axisLeft(y).tickFormat(d => `${Math.round(+d)}%`))
       .selectAll('text')
       .style('font-size', '10px');
 
