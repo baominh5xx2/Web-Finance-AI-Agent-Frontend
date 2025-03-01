@@ -22,6 +22,14 @@ interface TreemapData {
   children: StockGroup[];
 }
 
+// Interface for D3's treemap nodes with required properties
+interface TreemapNode extends d3.HierarchyNode<TreemapData> {
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+}
+
 const fakeData: TreemapData = {
   name: "Thị trường chứng khoán Việt Nam",
   children: [
@@ -177,7 +185,7 @@ export default function StockTreeMap({ width = '100%', height = 800 }) {
 
     // Vẽ các hình chữ nhật
     const cells = svg.selectAll("g")
-      .data(root.descendants())
+      .data(root.descendants() as TreemapNode[])
       .enter()
       .append("g")
       .attr("transform", d => `translate(${d.x0},${d.y0})`);
@@ -214,7 +222,7 @@ export default function StockTreeMap({ width = '100%', height = 800 }) {
     const stockCells = cells.filter(d => d.depth > 1);
     
     // Kiểm tra kích thước ô để quyết định cách hiển thị chữ
-    stockCells.each(function(d) {
+    stockCells.each(function(d: TreemapNode) {
       const cellWidth = d.x1 - d.x0;
       const cellHeight = d.y1 - d.y0;
       const cell = d3.select(this);
