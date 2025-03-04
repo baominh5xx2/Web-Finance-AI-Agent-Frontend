@@ -8,11 +8,20 @@ import MarketStatistics from '@/components/market-watch/MarketStatistics';
 import SmartTradeRecommendations from '@/components/smart-trade/SmartTradeRecommendations';
 import StockNews from '@/components/stock-news/StockNews';
 import InvestmentPerformance from '@/components/investment-performance/InvestmentPerformance';
+import Chatbot from '@/components/chatbot/chatbot'; // Import the Chatbot component
 import './dashboard.css';
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [newsItems] = useState([
+    {
+      title: 'Market Update',
+      date: '2024-01-20',
+      time: '09:00'
+    }
+  ]);
+
   const [marketData, setMarketData] = useState({
     indexData: {
       value: 1310,
@@ -109,7 +118,7 @@ export default function DashboardPage() {
     <div className="dashboard-container">
       <h1 className="dashboard-title">Thị Trường</h1>
       <div className="dashboard-content">
-        <MarketIndices />
+          <StockNews newsItems={newsItems} />
         <StockTreeMap width={'100%'} height={800} />
         <MarketStatistics
           indexData={marketData.indexData}  
@@ -118,10 +127,11 @@ export default function DashboardPage() {
         />
         <SmartTradeRecommendations recommendations={stockRecommendations} />
         <div className="dashboard-bottom-section">
-          <StockNews />
+          <StockNews newsItems={newsItems} />
           <InvestmentPerformance />
         </div>
       </div>
+      <Chatbot /> {/* Add the Chatbot component at the end of the dashboard container */}
     </div>
   );
 }

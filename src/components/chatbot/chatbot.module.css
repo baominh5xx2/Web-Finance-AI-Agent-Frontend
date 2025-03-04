@@ -1,0 +1,97 @@
+.chatbotContainer {
+    /* Container style if needed */
+}
+
+.chatbotButton {
+    position: fixed;  /* This makes the button stay in place when scrolling */
+    top: 50%;        /* Position at the middle of the viewport vertically */
+    transform: translateY(-50%); /* Center it perfectly vertically */
+    right: 20px;     /* Position from right of viewport instead of left */
+    left: auto;      /* Reset left position */
+    z-index: 1000;    /* Ensures it appears above other content */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    /* Make button more visible */
+    width: 56px !important;
+    height: 56px !important;
+}
+
+.chatbotButton:hover {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* Add a pulsing animation to draw attention */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(25, 118, 210, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(25, 118, 210, 0);
+    }
+}
+
+/* Apply the animation to the button */
+.chatbotButton::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: pulse 2s infinite;
+    z-index: -1;
+}
+
+.modalContainer {
+    position: absolute;
+    top: 50%;
+    right: 80px; /* Position to the left of the button */
+    left: auto;  /* Reset left position */
+    transform: translateY(-50%); /* Center vertically */
+    width: 320px;
+    background-color: #fff;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 80vh; /* Limit height to 80% of viewport height */
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.messageContainer {
+    height: 300px;
+    max-height: calc(80vh - 120px); /* Adjust based on header and input heights */
+    overflow-y: auto;
+    margin-bottom: 16px;
+    flex: 1;
+}
+
+.message {
+    margin: 5px;
+    padding: 10px;
+}
+
+.userMessage {
+    background-color: #e0f7fa;
+}
+
+.botMessage {
+    background-color: #f1f1f1;
+}
+
+.inputContainer {
+    display: flex;
+    gap: 8px;
+}
