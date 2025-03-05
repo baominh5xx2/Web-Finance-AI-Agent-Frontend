@@ -118,7 +118,10 @@ export default function DashboardPage() {
     <div className="dashboard-container">
       <h1 className="dashboard-title">Thị Trường</h1>
       <div className="dashboard-content">
-          <StockNews newsItems={newsItems} />
+        <div className="market-indices-wrapper">
+          <MarketIndices />
+        </div>
+        <StockNews newsItems={newsItems} />
         <StockTreeMap width={'100%'} height={800} />
         <MarketStatistics
           indexData={marketData.indexData}  

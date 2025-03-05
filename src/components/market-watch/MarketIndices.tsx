@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { 
   ReferenceLine, 
   ResponsiveContainer, 
@@ -13,7 +13,21 @@ import {
   Dot,
   ReferenceDot
 } from 'recharts';
+import { fetchMarketIndex, fetchMarketIndexChart } from '@/app/services/marketindices';
 
+// Define interfaces for API data
+interface ApiDataPoint {
+  time: string;
+  open: number;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  data: ApiDataPoint[];
+}
+
+// Define interface for index data
 interface IndexData {
   name: string;
   value: number;
@@ -22,196 +36,42 @@ interface IndexData {
   data: { time: number; value: number; }[];
 }
 
-const indices: IndexData[] = [
+// Initial data
+const initialIndices: IndexData[] = [
   {
     name: 'VN-Index',
-    value: 1205.3,
-    change: -2.46,
-    changePercent: -0.19,
-    data: [
-      { time: 0, value: 1213.4 },
-      { time: 1, value: 1214.9 },
-      { time: 2, value: 1217.3 },
-      { time: 3, value: 1220.8 },
-      { time: 4, value: 1224.1 },
-      { time: 5, value: 1227.6 },
-      { time: 6, value: 1225.2 },
-      { time: 7, value: 1229.7 },
-      { time: 8, value: 1231.5 },
-      { time: 9, value: 1228.3 },
-      { time: 10, value: 1225.9 },
-      { time: 11, value: 1221.4 },
-      { time: 12, value: 1219.8 },
-      { time: 13, value: 1216.2 },
-      { time: 14, value: 1214.7 },
-      { time: 15, value: 1212.9 },
-      { time: 16, value: 1216.3 },
-      { time: 17, value: 1214.1 },
-      { time: 18, value: 1209.7 },
-      { time: 19, value: 1211.2 },
-      { time: 20, value: 1208.6 },
-      { time: 21, value: 1205.8 },
-      { time: 22, value: 1204.2 },
-      { time: 23, value: 1206.9 },
-      { time: 24, value: 1210.5 },
-      { time: 25, value: 1208.7 },
-      { time: 26, value: 1204.3 },
-      { time: 27, value: 1207.8 },
-      { time: 28, value: 1204.5 },
-      { time: 29, value: 1205.3 }
-    ]
+    value: 1314.12,
+    change: 0.6,
+    changePercent: 0.05,
+    data: []
   },
   {
     name: 'HNX',
     value: 239.2,
     change: -0.2,
     changePercent: -0.08,
-    data: [
-      { time: 0, value: 238.7 },
-      { time: 1, value: 239.5 },
-      { time: 2, value: 240.8 },
-      { time: 3, value: 242.1 },
-      { time: 4, value: 243.3 },
-      { time: 5, value: 245.1 },
-      { time: 6, value: 244.7 },
-      { time: 7, value: 246.2 },
-      { time: 8, value: 245.8 },
-      { time: 9, value: 244.3 },
-      { time: 10, value: 243.9 },
-      { time: 11, value: 242.5 },
-      { time: 12, value: 244.8 },
-      { time: 13, value: 246.1 },
-      { time: 14, value: 245.6 },
-      { time: 15, value: 243.2 },
-      { time: 16, value: 241.9 },
-      { time: 17, value: 240.7 },
-      { time: 18, value: 242.5 },
-      { time: 19, value: 241.3 },
-      { time: 20, value: 240.8 },
-      { time: 21, value: 238.4 },
-      { time: 22, value: 237.9 },
-      { time: 23, value: 236.8 },
-      { time: 24, value: 238.2 },
-      { time: 25, value: 237.5 },
-      { time: 26, value: 238.7 },
-      { time: 27, value: 240.1 },
-      { time: 28, value: 238.9 },
-      { time: 29, value: 239.2 }
-    ]
+    data: []
   },
   {
     name: 'UPCOM',
     value: 99.4,
     change: -0.24,
     changePercent: -0.24,
-    data: [
-      { time: 0, value: 99.8 },
-      { time: 1, value: 100.3 },
-      { time: 2, value: 101.1 },
-      { time: 3, value: 100.7 },
-      { time: 4, value: 101.4 },
-      { time: 5, value: 102.3 },
-      { time: 6, value: 103.1 },
-      { time: 7, value: 102.8 },
-      { time: 8, value: 103.5 },
-      { time: 9, value: 102.9 },
-      { time: 10, value: 102.3 },
-      { time: 11, value: 101.8 },
-      { time: 12, value: 101.2 },
-      { time: 13, value: 100.5 },
-      { time: 14, value: 99.8 },
-      { time: 15, value: 100.2 },
-      { time: 16, value: 99.6 },
-      { time: 17, value: 98.9 },
-      { time: 18, value: 98.3 },
-      { time: 19, value: 97.7 },
-      { time: 20, value: 97.1 },
-      { time: 21, value: 97.9 },
-      { time: 22, value: 98.4 },
-      { time: 23, value: 99.1 },
-      { time: 24, value: 98.7 },
-      { time: 25, value: 98.3 },
-      { time: 26, value: 99.0 },
-      { time: 27, value: 99.5 },
-      { time: 28, value: 99.2 },
-      { time: 29, value: 99.4 }
-    ]
+    data: []
   },
   {
     name: 'VN30',
     value: 1256.4,
     change: -7.19,
     changePercent: -0.54,
-    data: [
-      { time: 0, value: 1262.8 },
-      { time: 1, value: 1264.5 },
-      { time: 2, value: 1267.3 },
-      { time: 3, value: 1269.8 },
-      { time: 4, value: 1272.5 },
-      { time: 5, value: 1275.7 },
-      { time: 6, value: 1273.6 },
-      { time: 7, value: 1276.2 },
-      { time: 8, value: 1274.9 },
-      { time: 9, value: 1271.4 },
-      { time: 10, value: 1269.2 },
-      { time: 11, value: 1265.8 },
-      { time: 12, value: 1263.1 },
-      { time: 13, value: 1266.9 },
-      { time: 14, value: 1263.5 },
-      { time: 15, value: 1261.7 },
-      { time: 16, value: 1259.2 },
-      { time: 17, value: 1257.8 },
-      { time: 18, value: 1255.3 },
-      { time: 19, value: 1253.9 },
-      { time: 20, value: 1251.2 },
-      { time: 21, value: 1247.8 },
-      { time: 22, value: 1245.3 },
-      { time: 23, value: 1248.7 },
-      { time: 24, value: 1252.1 },
-      { time: 25, value: 1254.6 },
-      { time: 26, value: 1253.2 },
-      { time: 27, value: 1255.8 },
-      { time: 28, value: 1254.3 },
-      { time: 29, value: 1256.4 }
-    ]
+    data: []
   },
   {
     name: 'HNX30',
     value: 501.2,
     change: 1.19,
     changePercent: 0.22,
-    data: [
-      { time: 0, value: 495.7 },
-      { time: 1, value: 496.3 },
-      { time: 2, value: 494.8 },
-      { time: 3, value: 493.2 },
-      { time: 4, value: 495.1 },
-      { time: 5, value: 497.4 },
-      { time: 6, value: 498.9 },
-      { time: 7, value: 501.2 },
-      { time: 8, value: 500.8 },
-      { time: 9, value: 502.3 },
-      { time: 10, value: 500.7 },
-      { time: 11, value: 498.5 },
-      { time: 12, value: 497.9 },
-      { time: 13, value: 496.4 },
-      { time: 14, value: 494.8 },
-      { time: 15, value: 493.5 },
-      { time: 16, value: 495.2 },
-      { time: 17, value: 497.8 },
-      { time: 18, value: 496.9 },
-      { time: 19, value: 498.3 },
-      { time: 20, value: 497.5 },
-      { time: 21, value: 499.2 },
-      { time: 22, value: 500.7 },
-      { time: 23, value: 499.8 },
-      { time: 24, value: 498.6 },
-      { time: 25, value: 499.3 },
-      { time: 26, value: 500.2 },
-      { time: 27, value: 501.7 },
-      { time: 28, value: 500.5 },
-      { time: 29, value: 501.2 }
-    ]
+    data: []
   },
 ];
 
@@ -236,11 +96,160 @@ const CustomizedDot = (props: any) => {
 };
 
 export default function MarketIndices() {
+  // State to store the market data
+  const [indices, setIndices] = useState<IndexData[]>(initialIndices);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [apiSuccess, setApiSuccess] = useState(false);
+
   // Tạo ref để tham chiếu đến container scroll
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Helper function to format chart data from API response
+  const formatChartData = (apiData: ApiDataPoint[] | null): { time: number; value: number; }[] => {
+    if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+      // If no data, create some dummy data for testing
+      return Array.from({ length: 30 }, (_, index) => ({
+        time: index,
+        value: 1200 + Math.random() * 20
+      }));
+    }
+    
+    // Format data with incremental time indices (0, 1, 2...) and price values
+    return apiData.map((point, index) => ({
+      time: index,
+      value: point.open
+    }));
+  };
+
+  // Fetch data from API
+  useEffect(() => {
+    const fetchMarketData = async () => {
+      try {
+        setIsLoading(true);
+        let apiDataLoaded = false;
+        
+        // Define index codes and their corresponding names in the UI
+        const indexMapping = [
+          { code: 'VNINDEX', name: 'VN-Index' },
+          { code: 'HNX', name: 'HNX' },
+          { code: 'UPCOM', name: 'UPCOM' },
+          { code: 'VN30', name: 'VN30' },
+          { code: 'HNX30', name: 'HNX30' }
+        ];
+        
+        // Process each index
+        const updatedIndices = [...initialIndices];
+        
+        // Use hard-coded test data for charts
+        for (let i = 0; i < updatedIndices.length; i++) {
+          const mockData = Array.from({ length: 30 }, (_, index) => ({
+            time: index,
+            value: 1200 + (Math.random() - 0.5) * 30
+          }));
+          
+          updatedIndices[i] = {
+            ...updatedIndices[i],
+            data: mockData
+          };
+        }
+        
+        // Set indices with test data immediately
+        setIndices(updatedIndices);
+        
+        // Then try to get real data from API if available
+        for (const index of indexMapping) {
+          try {
+            // Fetch basic index data
+            const indexData = await fetchMarketIndex(index.code);
+            
+            if (indexData) {
+              apiDataLoaded = true;
+              console.log(`✓ API data loaded successfully for ${index.name}`);
+              
+              // Update basic index information
+              setIndices(prevIndices => {
+                const updatedIndices = [...prevIndices];
+                const indexPosition = updatedIndices.findIndex(item => item.name === index.name);
+                
+                if (indexPosition !== -1) {
+                  updatedIndices[indexPosition] = {
+                    ...updatedIndices[indexPosition],
+                    value: indexData.current_price,
+                    change: indexData.price_change,
+                    changePercent: indexData.price_change_percent
+                  };
+                }
+                
+                return updatedIndices;
+              });
+              
+              // Fetch and format chart data
+              const chartData = await fetchMarketIndexChart(index.code);
+              console.log(`Chart data for ${index.name}:`, chartData); // Debug log
+              
+              if (chartData && chartData.length > 0) {
+                console.log(`✓ Chart data loaded successfully for ${index.name} (${chartData.length} points)`);
+                const formattedChartData = formatChartData(chartData);
+                
+                // Update chart data if we got something
+                if (formattedChartData.length > 0) {
+                  setIndices(prevIndices => {
+                    const updatedIndices = [...prevIndices];
+                    const indexPosition = updatedIndices.findIndex(item => item.name === index.name);
+                    
+                    if (indexPosition !== -1) {
+                      updatedIndices[indexPosition] = {
+                        ...updatedIndices[indexPosition],
+                        data: formattedChartData
+                      };
+                    }
+                    
+                    return updatedIndices;
+                  });
+                }
+              }
+            }
+          } catch (err) {
+            console.error(`Error loading data for ${index.name}:`, err);
+            // Continue with next index instead of failing completely
+          }
+        }
+        
+        setIsLoading(false);
+        
+        // Show final success status
+        if (apiDataLoaded) {
+          console.log('✅ Successfully loaded market data from API!');
+          setApiSuccess(true);
+          // You could also show a UI notification here if desired
+        } else {
+          console.warn('⚠️ Using fallback mock data as API data could not be loaded.');
+        }
+      } catch (err) {
+        console.error('Error fetching market data:', err);
+        setError('Failed to load market data');
+        setIsLoading(false);
+      }
+    };
+
+    fetchMarketData();
+  }, []);
+
   // Tính giá trị baseline cho mỗi chỉ số và xác định các điểm cao/thấp
   const indicesWithBaseline = indices.map(index => {
+    // Nếu không có dữ liệu, trả về index ban đầu
+    if (!index.data || index.data.length === 0) {
+      return {
+        ...index,
+        baseline: 0,
+        highPoint: 0,
+        lowPoint: 0,
+        highPointIndex: 0,
+        lowPointIndex: 0
+      };
+    }
+    
     const avgValue = index.data.reduce((sum, point) => sum + point.value, 0) / index.data.length;
     
     // Tìm giá trị cao nhất và thấp nhất
@@ -281,18 +290,32 @@ export default function MarketIndices() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="market-indices-container">
+        <div className="flex justify-center items-center p-4">
+          <p>Loading market data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="market-indices-container">
+        <div className="flex justify-center items-center p-4 text-red-500">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="market-indices-container" style={{ height: 'fit-content', maxHeight: '500px' }}>
-      {/* Nút cuộn sang trái */}
-      <button 
-        className="scroll-button left" 
-        onClick={handleScrollLeft}
-        aria-label="Cuộn sang trái"
-      >
+    <div className="market-indices-container">
+      <button className="scroll-button left" onClick={handleScrollLeft}>
         <i className="arrow left"></i>
       </button>
 
-      {/* Container chứa các thẻ có thể cuộn */}
       <div className="market-indices-scroll" ref={scrollContainerRef}>
         {indicesWithBaseline.map((index, i) => (
           <div key={index.name} className="market-index-card">
@@ -300,93 +323,49 @@ export default function MarketIndices() {
               <div className="market-index-info">
                 <h3 className="market-index-name">{index.name}</h3>
                 <div className={`market-index-value ${index.change >= 0 ? 'positive' : 'negative'}`}>
-                  {index.value.toFixed(1)}
+                  {index.value !== undefined ? index.value.toFixed(1) : 'N/A'}
                 </div>
                 <div className={`market-index-change ${index.change >= 0 ? 'positive' : 'negative'}`}>
                   <span className="change-arrow">{index.change >= 0 ? '▲' : '▼'}</span>
-                  {Math.abs(index.change).toFixed(1)}({Math.abs(index.changePercent).toFixed(2)}%)
+                  {index.change !== undefined ? Math.abs(index.change).toFixed(1) : 'N/A'} 
+                  {index.changePercent !== undefined ? `(${Math.abs(index.changePercent).toFixed(2)}%)` : ''}
                 </div>
               </div>
-              <div className="market-index-chart">
+              <div 
+                className="market-index-chart" 
+                style={{ 
+                  width: '120px', 
+                  height: '80px',
+                  position: 'relative',
+                  overflow: 'visible'
+                }}
+              >
+                {/* Debug info */}
+                {index.data.length === 0 && <div style={{fontSize: '10px', color: 'red'}}>No data</div>}
+                
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart 
-                    data={index.data} 
-                    margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                    data={index.data.length > 0 ? index.data : [
+                      {time: 0, value: 1200},
+                      {time: 1, value: 1210},
+                      {time: 2, value: 1205}
+                    ]} 
+                    margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
                   >
                     <defs>
-                      <linearGradient id={`colorUv${i}`} x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id={`colorUv${i}`} x1="0" y1="0" x2="0" y2="1"> 
                         <stop offset="5%" stopColor={index.change >= 0 ? "#22C55E" : "#EF4444"} stopOpacity={0.3}/>
                         <stop offset="95%" stopColor={index.change >= 0 ? "#22C55E" : "#EF4444"} stopOpacity={0.1}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} horizontal={true} vertical={false} />
-                    <YAxis 
-                      domain={['dataMin - 2', 'dataMax + 2']} 
-                      hide={true}
-                    />
-                    
-                    {/* Đường tham chiếu ở giá trị trung bình */}
-                    <ReferenceLine 
-                      y={index.baseline} 
-                      stroke="#B8C2CC" 
-                      strokeDasharray="3 3" 
-                      strokeWidth={1.5}
-                    />
-                    
-                    {/* Biểu đồ đường chính */}
+                    {/* Simplified chart for testing */}
                     <Area 
-                      type="linear" 
+                      type="monotone" 
                       dataKey="value" 
                       stroke={index.change >= 0 ? "#22C55E" : "#EF4444"} 
                       fillOpacity={1}
                       fill={`url(#colorUv${i})`}
-                      strokeWidth={2.5}
-                      connectNulls
-                      isAnimationActive={false}
-                      activeDot={{
-                        r: 4,
-                        fill: 'white',
-                        stroke: index.change >= 0 ? "#22C55E" : "#EF4444",
-                        strokeWidth: 2
-                      }}
-                    />
-                    
-                    {/* Điểm đánh dấu giá trị cao nhất */}
-                    <ReferenceDot
-                      x={index.highPointIndex}
-                      y={index.highPoint}
-                      r={4}
-                      fill="white"
-                      stroke={index.change >= 0 ? "#22C55E" : "#EF4444"}
                       strokeWidth={2}
-                    />
-                    
-                    {/* Điểm đánh dấu giá trị thấp nhất */}
-                    <ReferenceDot
-                      x={index.lowPointIndex}
-                      y={index.lowPoint}
-                      r={4}
-                      fill="white"
-                      stroke={index.change >= 0 ? "#22C55E" : "#EF4444"}
-                      strokeWidth={2}
-                    />
-                    
-                    {/* Hiển thị tooltip khi hover */}
-                    <Tooltip
-                      formatter={(value) => [`${Number(value).toFixed(1)}`, 'Giá trị']}
-                      labelFormatter={() => ''}
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: 'none',
-                        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-                        borderRadius: '4px',
-                        padding: '8px',
-                        fontWeight: 'bold'
-                      }}
-                      itemStyle={{
-                        color: index.change >= 0 ? "#22C55E" : "#EF4444",
-                        padding: 0
-                      }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -396,12 +375,7 @@ export default function MarketIndices() {
         ))}
       </div>
 
-      {/* Nút cuộn sang phải */}
-      <button 
-        className="scroll-button right" 
-        onClick={handleScrollRight}
-        aria-label="Cuộn sang phải"
-      >
+      <button className="scroll-button right" onClick={handleScrollRight}>
         <i className="arrow right"></i>
       </button>
     </div>
