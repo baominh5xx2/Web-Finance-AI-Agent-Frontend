@@ -79,7 +79,7 @@ interface StockTreeMapProps {
 
 export default function StockTreeMap({ 
   width = '100%', 
-  height = 800, 
+  height = 800,
   selectedIndex = 'VNINDEX',
   onIndexChange
 }: StockTreeMapProps) {
@@ -130,51 +130,22 @@ export default function StockTreeMap({
 
   // Transform API data to TreemapData format
   const transformApiData = (apiData: ApiStockData[], indexCode: string): TreemapData => {
-    // Group stocks by market cap size
-    const largeCapStocks = apiData
-      .filter(stock => stock.market_cap >= 10000) // 10,000 tỷ trở lên
-      .slice(0, 15); // Lấy top 15 cổ phiếu vốn hóa lớn
-      
-    const midCapStocks = apiData
-      .filter(stock => stock.market_cap >= 1000 && stock.market_cap < 10000) // 1,000 - 10,000 tỷ
-      .slice(0, 15);
-      
-    const smallCapStocks = apiData
-      .filter(stock => stock.market_cap < 1000) // Dưới 1,000 tỷ
-      .slice(0, 15);
+    // Sắp xếp theo vốn hóa giảm dần và lấy top 50 cổ phiếu
+    const sortedStocks = apiData
+      .sort((a, b) => b.market_cap - a.market_cap)
+      .slice(0, 50);
     
-    // Create TreemapData
     return {
       name: `Thị trường ${MARKET_INDICES.find(i => i.id === indexCode)?.name || indexCode}`,
       children: [
         {
-          name: "Vốn hóa lớn",
-          color: "#4f46e5",
-          children: largeCapStocks.map(stock => ({
-            name: stock.symbol,
-            value: stock.market_cap,
-            change: 0, // Không có dữ liệu về change từ API
-            color: "#4f46e5"
-          }))
-        },
-        {
-          name: "Vốn hóa trung bình",
-          color: "#10b981",
-          children: midCapStocks.map(stock => ({
+          name: "Cổ phiếu",
+          color: "#2563eb",
+          children: sortedStocks.map(stock => ({
             name: stock.symbol,
             value: stock.market_cap,
             change: 0,
-            color: "#10b981"
-          }))
-        },
-        {
-          name: "Vốn hóa nhỏ",
-          color: "#f59e0b",
-          children: smallCapStocks.map(stock => ({
-            name: stock.symbol,
-            value: stock.market_cap,
-            change: 0,
-            color: "#f59e0b"
+            color: "#2563eb"
           }))
         }
       ]
@@ -183,32 +154,20 @@ export default function StockTreeMap({
 
   // Lấy kích thước thực của container
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Tính toán kích thước thực tế của container
     const updateDimensions = () => {
       if (containerRef.current) {
-        const containerWidth = containerRef.current.clientWidth;
-        setDimensions({
-          width: typeof width === 'number' ? width : containerWidth,
-          height: typeof height === 'number' ? height : 800
-        });
+        const { width } = containerRef.current.getBoundingClientRect();
+        // Tính toán chiều cao dựa trên viewport height
+        const viewportHeight = window.innerHeight;
+        const calculatedHeight = Math.max(600, viewportHeight - 300); // Tối thiểu 600px, tối đa là viewport height - 300px
+        setDimensions({ width, height: calculatedHeight });
       }
     };
 
-    // Cập nhật kích thước ban đầu
     updateDimensions();
-
-    // Theo dõi thay đổi kích thước
-    const resizeObserver = new ResizeObserver(updateDimensions);
-    resizeObserver.observe(containerRef.current);
-
-    return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
-      }
-    };
-  }, [width, height]);
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
 
   // Fetch data when selectedIndex changes
   useEffect(() => {
@@ -229,16 +188,15 @@ export default function StockTreeMap({
     // Tạo root hierarchy
     const root = d3.hierarchy<TreemapData>(treemapData)
       .sum((d: any) => {
-        // Handle the different levels of the hierarchy
         if ('value' in d) {
           return (d as StockData).value;
         }
         return 0;
       });
 
-    // Tạo treemap layout
+    // Tạo treemap layout với padding mới
     const treemapGenerator = d3.treemap<TreemapData>()
-      .size([dimensions.width, dimensions.height - 30]) // Để lại không gian cho thanh thống kê bên dưới
+      .size([dimensions.width, dimensions.height])
       .paddingTop(0)
       .paddingRight(1)
       .paddingBottom(1)
@@ -255,38 +213,6 @@ export default function StockTreeMap({
       .append("g")
       .attr("transform", (d: TreemapNode) => `translate(${d.x0},${d.y0})`);
 
-    // Vẽ các group rectangles
-    cells
-      .filter((d: TreemapNode) => d.depth === 1)
-      .append("rect")
-      .attr("width", (d: TreemapNode) => d.x1 - d.x0)
-      .attr("height", (d: TreemapNode) => d.y1 - d.y0)
-      .attr("fill", (d: TreemapNode) => {
-        // Lấy màu của nhóm dựa trên màu của cổ phiếu con đầu tiên
-        const data = d.data as any;
-        if (data && 'color' in data) {
-          return data.color;
-        }
-        return "#eee";
-      })
-      .attr("fill-opacity", 0.3)
-      .attr("stroke", "#000")
-      .attr("stroke-width", 0.5);
-
-    // Tên nhóm
-    cells
-      .filter((d: TreemapNode) => d.depth === 1)
-      .append("text")
-      .attr("x", 5)
-      .attr("y", 15)
-      .attr("fill", "#000")
-      .attr("font-weight", "bold")
-      .attr("font-size", "12px")
-      .text((d: TreemapNode) => {
-        const data = d.data as any;
-        return data && 'name' in data ? data.name : '';
-      });
-
     // Vẽ các ô cho leaf nodes (cổ phiếu)
     cells
       .filter((d: TreemapNode) => d.depth === 2)
@@ -300,40 +226,44 @@ export default function StockTreeMap({
       .attr("stroke", "#fff")
       .attr("stroke-width", 0.5);
 
-    // Thêm text cho leaf nodes
+    // Điều chỉnh ngưỡng hiển thị text và kích thước font
     cells.filter((d: TreemapNode) => d.depth === 2).each(function(d: TreemapNode) {
       const cell = d3.select(this);
       const cellWidth = d.x1 - d.x0;
       const cellHeight = d.y1 - d.y0;
       
       // Chỉ hiển thị text nếu ô đủ lớn
-      if (cellWidth < 30 || cellHeight < 20) return;
+      if (cellWidth < 50 || cellHeight < 35) return;
+
+      const centerX = cellWidth / 2;
+      const centerY = cellHeight / 2;
       
       // Tên cổ phiếu
       cell.append("text")
-        .attr("x", 5)
-        .attr("y", 15)
+        .attr("x", centerX)
+        .attr("y", centerY - 10)
         .attr("fill", "#fff")
         .attr("font-weight", "bold")
-        .attr("font-size", cellWidth < 60 ? "10px" : "14px")
-        .text((d: TreemapNode) => {
-          const data = d.data as any;
-          return data && 'name' in data ? data.name : '';
-        });
+        .attr("font-size", cellWidth < 70 ? "11px" : "13px")
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .text((d: any) => d.data.name);
       
       // Giá trị cổ phiếu ở dưới tên
       cell.append("text")
-        .attr("x", 5)
-        .attr("y", 30)
+        .attr("x", centerX)
+        .attr("y", centerY + 10)
         .attr("fill", "#fff")
-        .attr("font-size", cellWidth < 60 ? "8px" : "12px")
-        .text((d: TreemapNode) => {
-          const data = d.data as any;
-          if (data && 'value' in data) {
-            const value = Math.round(data.value * 10) / 10;
-            return `${value} tỷ`;
-          }
-          return '';
+        .attr("font-size", cellWidth < 70 ? "9px" : "11px")
+        .attr("text-anchor", "middle")
+        .text((d: any) => {
+          // Chia cho 1 tỷ và format số
+          const valueInBillions = d.data.value / 1000000000;
+          const formattedValue = new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          }).format(valueInBillions);
+          return `${formattedValue} tỷ`;
         });
     });
   }, [dimensions, treemapData]);
