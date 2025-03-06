@@ -226,10 +226,37 @@ export default function StockTreeMap({
                 console.warn('[Component] Cache file does not contain any recognized timestamp field');
               }
               
-              // Kiểm tra cache có hết hạn chưa nếu có thời gian
+              // Thay đổi phần xóa cache quá hạn
               if (cacheCreatedAt) {
                 if (isCacheExpired(cacheCreatedAt)) {
                   console.log(`[Component] Cache has expired, will fetch fresh data`);
+                  
+                  // Xóa file cache cũ bằng cách gọi API route mới
+                  try {
+                    console.log(`[Component] Deleting expired cache file for ${indexCode}...`);
+                    
+                    // Sử dụng API route mới để xóa file
+                    const deleteResponse = await fetch(`/api/index-data/save`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ 
+                        action: 'delete',
+                        indexCode: indexCode
+                      }),
+                    });
+                    
+                    if (deleteResponse.ok) {
+                      const result = await deleteResponse.json();
+                      console.log(`[Component] ✅ Successfully deleted expired cache file for ${indexCode}: ${result.message}`);
+                    } else {
+                      console.warn(`[Component] Failed to delete expired cache: ${deleteResponse.status} ${deleteResponse.statusText}`);
+                    }
+                  } catch (deleteError) {
+                    console.error(`[Component] Error deleting expired cache:`, deleteError);
+                  }
+                  
                   // Đánh dấu là chưa load để fetch lại
                   loadedIndicesRef.current.delete(indexCode);
                   // Bỏ qua cache này
@@ -312,18 +339,16 @@ export default function StockTreeMap({
       console.log(`[Component] Saving transformed data to cache for future use...`);
       
       try {
-        // Tạo dữ liệu để lưu cache với metadata
+        // Tạo dữ liệu để lưu cache
         const dataToCache = {
-          indexTreemapData: transformedData,
-          cacheMeta: {
-            createdAt: new Date().getTime(),
-            source: `http://localhost:8000/api/v1/treemap/${apiIndex}`,
-            indexCode: indexCode
+          indexCode: indexCode,
+          data: {
+            indexTreemapData: transformedData
           }
         };
         
-        // Lưu vào file JSON trong thư mục public/data
-        const cacheResponse = await fetch(`/api/index-data/${indexCode}`, {
+        // Lưu vào file JSON thông qua API route
+        const cacheResponse = await fetch(`/api/index-data/save`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -332,7 +357,8 @@ export default function StockTreeMap({
         });
         
         if (cacheResponse.ok) {
-          console.log(`[Component] ✅ Successfully saved cache file for ${indexCode}`);
+          const result = await cacheResponse.json();
+          console.log(`[Component] ✅ Successfully saved cache file for ${indexCode}. Saved at: ${result.path}`);
         } else {
           console.warn(`[Component] Failed to save cache: ${cacheResponse.status} ${cacheResponse.statusText}`);
         }

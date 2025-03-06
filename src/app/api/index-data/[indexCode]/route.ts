@@ -133,4 +133,135 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { indexCode: string } }
+) {
+  const { indexCode } = params;
+  
+  console.log(`[API] Request to delete cache file for index: ${indexCode}`);
+  
+  try {
+    // Đường dẫn file JSON
+    const filePath = path.join(DATA_DIR, `${indexCode}.json`);
+    console.log(`[API] Checking file path: ${filePath}`);
+    
+    // Kiểm tra xem file có tồn tại không
+    const fileExists = fs.existsSync(filePath);
+    console.log(`[API] File exists: ${fileExists}`);
+    
+    if (!fileExists) {
+      console.log(`[API] No cache file to delete for index: ${indexCode}`);
+      return NextResponse.json(
+        { success: false, message: 'File not found', indexCode },
+        { status: 404 }
+      );
+    }
+    
+    // File tồn tại - xóa file
+    console.log(`[API] Deleting file: ${filePath}`);
+    fs.unlinkSync(filePath);
+    console.log(`[API] ✅ Successfully deleted cache file for index: ${indexCode}`);
+    
+    return NextResponse.json({
+      success: true,
+      message: `Successfully deleted cache file for index: ${indexCode}`,
+      indexCode
+    });
+  } catch (error) {
+    console.error(`[API] Error deleting cache file for index ${indexCode}:`, error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to delete cache file', 
+        message: (error as Error).message,
+        indexCode
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Cập nhật hàm POST để hỗ trợ action=delete
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { indexCode: string } }
+) {
+  const { indexCode } = params;
+  
+  try {
+    // Đọc dữ liệu từ request
+    const requestData = await request.json();
+    
+    // Kiểm tra xem có phải là yêu cầu xóa file không
+    if (requestData.action === 'delete') {
+      console.log(`[API] Request to delete cache file for index: ${indexCode}`);
+      
+      // Đường dẫn file cần xóa
+      const filePath = path.join(DATA_DIR, `${indexCode}.json`);
+      console.log(`[API] Checking file path: ${filePath}`);
+      
+      // Kiểm tra xem file có tồn tại không
+      const fileExists = fs.existsSync(filePath);
+      console.log(`[API] File exists: ${fileExists}`);
+      
+      if (!fileExists) {
+        console.log(`[API] No cache file to delete for index: ${indexCode}`);
+        return NextResponse.json(
+          { success: false, message: 'File not found', indexCode },
+          { status: 404 }
+        );
+      }
+      
+      // File tồn tại - xóa file
+      console.log(`[API] Deleting file: ${filePath}`);
+      fs.unlinkSync(filePath);
+      console.log(`[API] ✅ Successfully deleted cache file for index: ${indexCode}`);
+      
+      return NextResponse.json({
+        success: true,
+        message: `Successfully deleted cache file for index: ${indexCode}`,
+        indexCode
+      });
+    }
+    
+    // Nếu không phải yêu cầu xóa, tiếp tục lưu cache như bình thường
+    console.log(`[API] Request to save cache for index: ${indexCode}`);
+    
+    // Đảm bảo thư mục data tồn tại
+    if (!fs.existsSync(DATA_DIR)) {
+      console.log(`[API] Creating data directory: ${DATA_DIR}`);
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    
+    // Thêm metadata về thời gian lưu cache
+    const dataToSave = {
+      ...requestData,
+      savedAt: new Date().toISOString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    // Đường dẫn file để lưu
+    const filePath = path.join(DATA_DIR, `${indexCode}.json`);
+    console.log(`[API] Saving data to file: ${filePath}`);
+    
+    // Ghi file
+    fs.writeFileSync(filePath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+    console.log(`[API] ✅ Successfully saved cache file for ${indexCode}`);
+    
+    return NextResponse.json({
+      success: true,
+      message: `Successfully saved cache for ${indexCode}`,
+      savedAt: dataToSave.savedAt,
+      filePath: `${indexCode}.json`
+    });
+  } catch (error) {
+    console.error(`[API] Error processing request for ${indexCode}:`, error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to process request', message: (error as Error).message },
+      { status: 500 }
+    );
+  }
 } 
