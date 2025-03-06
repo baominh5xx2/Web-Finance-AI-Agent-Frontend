@@ -37,12 +37,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 /**
  * Fetches data for a specific market index by its code
  * @param indexCode - The code of the index (e.g., "VNINDEX", "HNXINDEX", "UPCOMINDEX")
+ * @param top - Number of data points to fetch, default is 90
  * @returns The market index data or null if the request fails
  */
-export const fetchMarketIndex = async (indexCode: string): Promise<MarketIndexData | null> => {
+export const fetchMarketIndex = async (indexCode: string, top: number = 90): Promise<MarketIndexData | null> => {
   try {
     const response = await axios.get<MarketIndexResponse>(
-      `${API_BASE_URL}/api/v1/market/indices/${indexCode}`
+      `${API_BASE_URL}/api/v1/market/indices/${indexCode}?top=${top}`
     );
     
     // Kiểm tra xem có flag is_na không
@@ -78,11 +79,12 @@ export const fetchVNINDEX = async (): Promise<MarketIndexData | null> => {
  * @returns Object mapping index codes to their data
  */
 export const fetchMultipleIndices = async (
-  indexCodes: string[] = ['VNINDEX', 'HNXINDEX', 'UPCOMINDEX', 'VN30', 'HNX30']
+  indexCodes: string[] = ['VNINDEX', 'HNXINDEX', 'UPCOMINDEX', 'VN30', 'HNX30'],
+  top: number = 90
 ): Promise<Record<string, MarketIndexData | null>> => {
   try {
     const response = await axios.get<MarketIndexResponse>(
-      `${API_BASE_URL}/api/v1/market/indices`
+      `${API_BASE_URL}/api/v1/market/indices?top=${top}`
     );
     
     const results: Record<string, MarketIndexData | null> = {};

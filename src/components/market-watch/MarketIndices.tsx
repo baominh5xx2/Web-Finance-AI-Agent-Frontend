@@ -169,7 +169,7 @@ export default function MarketIndices() {
           const fetchStartTime = performance.now();
           
           // Gọi API với đúng mã chỉ số
-          const allIndices = await fetchMultipleIndices(['VNINDEX', 'HNXINDEX', 'UPCOMINDEX', 'VN30', 'HNX30']);
+          const allIndices = await fetchMultipleIndices(['VNINDEX', 'HNXINDEX', 'UPCOMINDEX', 'VN30', 'HNX30'], 90);
           
           const fetchEndTime = performance.now();
           console.log(`API fetch completed in ${(fetchEndTime - fetchStartTime).toFixed(2)}ms`);

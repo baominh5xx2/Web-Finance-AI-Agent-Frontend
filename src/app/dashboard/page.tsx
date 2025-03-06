@@ -121,7 +121,6 @@ export default function DashboardPage() {
         <div className="market-indices-wrapper">
           <MarketIndices />
         </div>
-        <StockNews newsItems={newsItems} />
         <StockTreeMap width={'100%'} height={800} />
         <MarketStatistics
           indexData={marketData.indexData}  
