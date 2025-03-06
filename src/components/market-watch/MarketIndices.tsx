@@ -31,6 +31,11 @@ interface ChartDataPoint {
   open: number;
 }
 
+// Props interface for MarketIndices component
+interface MarketIndicesProps {
+  onIndexSelect?: (indexName: string, indexData: IndexData) => void;
+}
+
 // Initial data
 const initialIndices: IndexData[] = [
   {
@@ -105,14 +110,15 @@ const generateMockChartData = (baseValue: number): ChartDataPoint[] => {
   return points;
 };
 
-export default function MarketIndices() {
+export default function MarketIndices({ onIndexSelect }: MarketIndicesProps) {
   // State to store the market data
   const [indices, setIndices] = useState<IndexData[]>(initialIndices);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [apiSuccess, setApiSuccess] = useState(false);
   const [loadingStartTime, setLoadingStartTime] = useState<number>(0);
-
+  const [selectedIndex, setSelectedIndex] = useState<string>('VN-Index');
+  
   // Tạo ref để tham chiếu đến container scroll
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -133,36 +139,46 @@ export default function MarketIndices() {
     }));
   };
 
+  // Handle index click
+  const handleIndexClick = (index: IndexData) => {
+    setSelectedIndex(index.name);
+    
+    // Notify parent component if callback is provided
+    if (onIndexSelect) {
+      onIndexSelect(index.name, index);
+    }
+  };
+
   // Fetch data from API
   useEffect(() => {
-    const fetchMarketData = async () => {
-      try {
-        // Ghi nhận thời điểm bắt đầu tải
-        const startTime = performance.now();
-        setLoadingStartTime(startTime);
-        setIsLoading(true);
+    try {
+      // Ghi nhận thời điểm bắt đầu tải
+      const startTime = performance.now();
+      setLoadingStartTime(startTime);
+      setIsLoading(true);
+      
+      // Đảm bảo thông báo "Loading market data..." hiển thị ít nhất 1 giây
+      // để tránh hiện tượng nhấp nháy nếu dữ liệu tải quá nhanh
+      const loadingPromise = new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Load initial data immediately for a responsive UI
+      let apiDataLoaded = false;
+      const updatedIndices = [...indices];
+      
+      // Generate mock chart data for immediate display
+      for (let i = 0; i < updatedIndices.length; i++) {
+        const mockData = generateMockChartData(updatedIndices[i].value || 100);
         
-        // Đảm bảo thông báo "Loading market data..." hiển thị ít nhất 1 giây
-        // để tránh hiện tượng nhấp nháy nếu dữ liệu tải quá nhanh
-        const loadingPromise = new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Load initial data immediately for a responsive UI
-        let apiDataLoaded = false;
-        const updatedIndices = [...indices];
-        
-        // Generate mock chart data for immediate display
-        for (let i = 0; i < updatedIndices.length; i++) {
-          const mockData = generateMockChartData(updatedIndices[i].value || 100);
-          
-          updatedIndices[i] = {
-            ...updatedIndices[i],
-            data: mockData
-          };
-        }
-        
-        // Set indices with test data immediately
-        setIndices(updatedIndices);
-        
+        updatedIndices[i] = {
+          ...updatedIndices[i],
+          data: mockData
+        };
+      }
+      
+      // Set indices with test data immediately
+      setIndices(updatedIndices);
+      
+      const fetchMarketData = async () => {
         // Fetch data from API using the fetchMultipleIndices function
         try {
           console.log("Fetching market indices data...");
@@ -280,14 +296,14 @@ export default function MarketIndices() {
         console.log(`Total loading time: ${(endTime - startTime).toFixed(2)}ms`);
         
         setIsLoading(false);
-      } catch (e) {
-        console.error("Error in market data loading:", e);
-        setError(`Error loading market data: ${e}`);
-        setIsLoading(false);
-      }
-    };
-    
-    fetchMarketData();
+      };
+
+      fetchMarketData();
+    } catch (e) {
+      console.error("Error in market data loading:", e);
+      setError(`Error loading market data: ${e}`);
+      setIsLoading(false);
+    }
   }, []);
 
   // Tính giá trị baseline cho mỗi chỉ số và xác định các điểm cao/thấp
@@ -373,7 +389,11 @@ export default function MarketIndices() {
 
       <div className="market-indices-scroll" ref={scrollContainerRef}>
         {indicesWithBaseline.map((index, i) => (
-          <div key={index.name} className="market-index-card">
+          <div 
+            key={index.name} 
+            className={`market-index-card ${index.name === selectedIndex ? 'selected' : ''}`}
+            onClick={() => handleIndexClick(index)}
+          >
             <div className="market-index-content">
               <div className="market-index-info">
                 <h3 className="market-index-name">{index.name}</h3>

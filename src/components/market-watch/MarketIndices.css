@@ -35,6 +35,19 @@
   flex-direction: column;
   flex-shrink: 0;
   border: 1px solid rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.market-index-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.market-index-card.selected {
+  border: 2px solid #4f46e5;
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
+  transform: translateY(-3px);
 }
 
 .market-index-content {
@@ -108,25 +121,25 @@
 }
 
 .scroll-button.left {
-  left: 5px;
+  left: 8px;
 }
 
 .scroll-button.right {
-  right: 5px;
+  right: 8px;
 }
 
 .arrow {
   border: solid #666;
   border-width: 0 2px 2px 0;
   display: inline-block;
-  padding: 2px;
+  padding: 3px;
 }
 
-.right {
+.arrow.right {
   transform: rotate(-45deg);
 }
 
-.left {
+.arrow.left {
   transform: rotate(135deg);
 }
 

@@ -11,9 +11,56 @@ import InvestmentPerformance from '@/components/investment-performance/Investmen
 import Chatbot from '@/components/chatbot/chatbot'; // Import the Chatbot component
 import './dashboard.css';
 
+// Define interfaces for market data
+interface IndexData {
+  name: string;
+  value: number | null;
+  change: number | null;
+  changePercent: number | null;
+  data: ChartDataPoint[];
+}
+
+interface ChartDataPoint {
+  time: string | number;
+  open: number;
+}
+
+// Define interface for StockRecommendation
+interface StockRecommendation {
+  code: string;
+  smartScore: number;
+  recommendation: string;
+  currentPrice: number;
+  purchasePrice: number;
+  purchaseDate: string;
+  percentChange: number;
+}
+
+// Mapping giữa tên chỉ số và mã chỉ số
+const INDEX_CODE_MAP: Record<string, string> = {
+  'VN-Index': 'VNINDEX',
+  'HNX': 'HNX',
+  'UPCOM': 'UPCOM',
+  'VN30': 'VN30',
+  'HNX30': 'HNX30'
+};
+
+// Mapping ngược lại từ mã chỉ số sang tên chỉ số
+const INDEX_NAME_MAP: Record<string, string> = {
+  'VNINDEX': 'VN-Index',
+  'HNX': 'HNX',
+  'UPCOM': 'UPCOM',
+  'VN30': 'VN30',
+  'HNX30': 'HNX30'
+};
+
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<string>('VN-Index');
+  const [selectedIndexCode, setSelectedIndexCode] = useState<string>('VNINDEX');
+  
+  // State for news items
   const [newsItems] = useState([
     {
       title: 'Market Update',
@@ -22,6 +69,7 @@ export default function DashboardPage() {
     }
   ]);
 
+  // State for market data
   const [marketData, setMarketData] = useState({
     indexData: {
       value: 1310,
@@ -50,59 +98,160 @@ export default function DashboardPage() {
     }
   });
 
-  // Mock data for stock recommendations
-  const stockRecommendations = [
-    {
-      code: 'THG',
-      smartScore: 73,
-      recommendation: 'NẮM GIỮ',
-      currentPrice: 43.23,
-      purchasePrice: 21.65,
-      purchaseDate: '21/11/2024',
-      percentChange: 43.7
+  // Mock recommendations data
+  const [stockRecommendations] = useState<StockRecommendation[]>([
+    { 
+      code: 'HPG', 
+      smartScore: 85,
+      recommendation: 'MUA', 
+      currentPrice: 29800,
+      purchasePrice: 27500,
+      purchaseDate: '10/01/2024',
+      percentChange: 8.4
     },
-    {
-      code: 'MBB',
-      smartScore: 71,
-      recommendation: 'NẮM GIỮ',
-      currentPrice: 21.65,
-      purchasePrice: 26.12,
-      purchaseDate: '26/12/2024',
-      percentChange: 6.5
+    { 
+      code: 'VHM', 
+      smartScore: 72,
+      recommendation: 'NẮM GIỮ', 
+      currentPrice: 41200,
+      purchasePrice: 42000,
+      purchaseDate: '15/12/2023',
+      percentChange: -1.9
     },
-    {
-      code: 'QNS',
-      smartScore: 68,
-      recommendation: 'NẮM GIỮ',
-      currentPrice: 47.95,
-      purchasePrice: 23.09,
-      purchaseDate: '23/09/2024',
-      percentChange: 5.5
-    },
-    {
-      code: 'SIP',
-      smartScore: 67,
-      recommendation: 'NẮM GIỮ',
-      currentPrice: 78.16,
-      purchasePrice: 6.11,
-      purchaseDate: '06/11/2024',
-      percentChange: 13.4
+    { 
+      code: 'ACB', 
+      smartScore: 78,
+      recommendation: 'MUA', 
+      currentPrice: 25100,
+      purchasePrice: 23000,
+      purchaseDate: '05/02/2024',
+      percentChange: 9.1
     }
-  ];
+  ]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        setHasError(true);
-        setIsLoading(false);
+  // Handle index selection from MarketIndices component
+  const handleIndexSelect = (indexName: string, indexData: IndexData) => {
+    setSelectedIndex(indexName);
+    const indexCode = INDEX_CODE_MAP[indexName] || 'VNINDEX';
+    setSelectedIndexCode(indexCode);
+    
+    // Update market data based on selected index
+    const updatedMarketData = {
+      ...marketData,
+      indexData: {
+        value: indexData.value || 0,
+        data: indexData.data.map(point => ({
+          time: String(point.time),
+          value: point.open
+        }))
       }
     };
+    
+    // Update statistics based on the selected index
+    updateMarketStatistics(indexName, updatedMarketData);
+    setMarketData(updatedMarketData);
+  };
+  
+  // Handle index selection from StockTreeMap component
+  const handleTreemapIndexChange = (indexCode: string) => {
+    const indexName = INDEX_NAME_MAP[indexCode] || 'VN-Index';
+    setSelectedIndex(indexName);
+    setSelectedIndexCode(indexCode);
+    
+    // Update market data based on selected index
+    const updatedMarketData = { ...marketData };
+    updateMarketStatistics(indexName, updatedMarketData);
+    setMarketData(updatedMarketData);
+  };
+  
+  // Helper function to update market statistics based on selected index
+  const updateMarketStatistics = (indexName: string, data: any) => {
+    // In a real app, you would fetch this data from an API based on the selected index
+    // For now, we're just updating with mock data
+    switch(indexName) {
+      case 'VN-Index':
+        data.statistics = {
+          pe: 13.1,
+          marketCap: 5475997,
+          tradingValue: 18661,
+          tradingVolume: 814810599,
+          high52w: 1307.8,
+          low52w: 1174.8,
+          ytdReturn: '3%',
+          yearReturn: '4%'
+        };
+        break;
+      case 'HNX':
+        data.statistics = {
+          pe: 12.3,
+          marketCap: 1285635,
+          tradingValue: 5132,
+          tradingVolume: 224315689,
+          high52w: 247.3,
+          low52w: 208.9,
+          ytdReturn: '2.5%',
+          yearReturn: '3.2%'
+        };
+        break;
+      case 'UPCOM':
+        data.statistics = {
+          pe: 10.8,
+          marketCap: 875432,
+          tradingValue: 3245,
+          tradingVolume: 156248912,
+          high52w: 102.4,
+          low52w: 89.6,
+          ytdReturn: '1.8%',
+          yearReturn: '2.5%'
+        };
+        break;
+      case 'VN30':
+        data.statistics = {
+          pe: 14.2,
+          marketCap: 4125698,
+          tradingValue: 12589,
+          tradingVolume: 562489123,
+          high52w: 1289.6,
+          low52w: 1125.4,
+          ytdReturn: '3.8%',
+          yearReturn: '4.5%'
+        };
+        break;
+      case 'HNX30':
+        data.statistics = {
+          pe: 11.5,
+          marketCap: 956324,
+          tradingValue: 4125,
+          tradingVolume: 189456321,
+          high52w: 512.4,
+          low52w: 478.9,
+          ytdReturn: '2.2%',
+          yearReturn: '2.9%'
+        };
+        break;
+      default:
+        // Keep existing statistics
+        break;
+    }
+    
+    // Also update volume data for demonstration
+    data.volumeData = {
+      current: data.statistics.tradingVolume,
+      previous: data.statistics.tradingVolume * 0.9, // Just an example
+      data: Array.from({ length: 100 }, (_, i) => ({
+        time: `${Math.floor(i / 60)}:${i % 60}`,
+        value: data.statistics.tradingVolume * 0.7 + (Math.random() * 0.6 * data.statistics.tradingVolume)
+      }))
+    };
+  };
 
-    fetchData();
+  useEffect(() => {
+    // Simulate data loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   if (hasError) {
@@ -119,9 +268,14 @@ export default function DashboardPage() {
       <h1 className="dashboard-title">Thị Trường</h1>
       <div className="dashboard-content">
         <div className="market-indices-wrapper">
-          <MarketIndices />
+          <MarketIndices onIndexSelect={handleIndexSelect} />
         </div>
-        <StockTreeMap width={'100%'} height={800} />
+        <StockTreeMap 
+          width={'100%'} 
+          height={400} 
+          selectedIndex={selectedIndexCode}
+          onIndexChange={handleTreemapIndexChange}
+        />
         <MarketStatistics
           indexData={marketData.indexData}  
           volumeData={marketData.volumeData}
@@ -133,7 +287,7 @@ export default function DashboardPage() {
           <InvestmentPerformance />
         </div>
       </div>
-      <Chatbot /> {/* Add the Chatbot component at the end of the dashboard container */}
+      <Chatbot />
     </div>
   );
 }
