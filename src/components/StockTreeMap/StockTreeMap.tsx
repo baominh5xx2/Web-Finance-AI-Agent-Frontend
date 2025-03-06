@@ -3,12 +3,14 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import './StockTreeMap.css';
+import { getTreemapColor } from '@/app/services/treemap_color';
 
 // Interface for API response
 interface ApiStockData {
   symbol: string;
   total_value: number;
   market_cap: number;
+  difference: number;
 }
 
 interface ApiResponse {
@@ -22,6 +24,7 @@ interface StockData {
   value: number;
   change: number;
   color: string;
+  difference: number;  // Add difference field
 }
 
 interface StockGroup {
@@ -96,7 +99,6 @@ export default function StockTreeMap({
       onIndexChange(indexId);
     }
   };
-
   // Fetch data from API
   const fetchTreemapData = async (indexCode: string) => {
     try {
@@ -116,8 +118,8 @@ export default function StockTreeMap({
         throw new Error(data.message || 'Failed to fetch data');
       }
       
-      // Transform API data to TreemapData format
-      const transformedData = transformApiData(data.data, indexCode);
+      // Transform API data to TreemapData format with colors
+      const transformedData = await transformApiData(data.data, indexCode);
       setTreemapData(transformedData);
       
     } catch (err) {
@@ -129,11 +131,30 @@ export default function StockTreeMap({
   };
 
   // Transform API data to TreemapData format
-  const transformApiData = (apiData: ApiStockData[], indexCode: string): TreemapData => {
+  const transformApiData = async (apiData: ApiStockData[], indexCode: string): Promise<TreemapData> => {
     // Sắp xếp theo vốn hóa giảm dần và lấy top 50 cổ phiếu
     const sortedStocks = apiData
       .sort((a, b) => b.market_cap - a.market_cap)
-      .slice(0, 50);
+      .slice(0, 35);
+    
+    // Lấy dữ liệu difference cho từng cổ phiếu từ API treemap_color
+    const stocksWithDifference = await Promise.all(
+      sortedStocks.map(async (stock) => {
+        try {
+          // Gọi API để lấy dữ liệu difference
+          const stockData = await getTreemapColor(stock.symbol);
+          return {
+            ...stock,
+            apiDifference: stockData.difference,
+            percentageChange: stockData.percentage_change
+          };
+        } catch (error) {
+          console.error(`Error fetching data for ${stock.symbol}:`, error);
+          // Sử dụng dữ liệu difference mặc định nếu API thất bại
+          return stock;
+        }
+      })
+    );
     
     return {
       name: `Thị trường ${MARKET_INDICES.find(i => i.id === indexCode)?.name || indexCode}`,
@@ -141,12 +162,35 @@ export default function StockTreeMap({
         {
           name: "Cổ phiếu",
           color: "#2563eb",
-          children: sortedStocks.map(stock => ({
-            name: stock.symbol,
-            value: stock.market_cap,
-            change: 0,
-            color: "#2563eb"
-          }))
+          children: stocksWithDifference.map(stock => {
+            // Sử dụng apiDifference nếu có, nếu không thì dùng difference từ dữ liệu gốc
+            const diffValue = 'apiDifference' in stock ? stock.apiDifference : stock.difference;
+            
+            // Chuyển đổi diffValue thành số để so sánh chính xác
+            const numericDiff = Number(diffValue);
+            
+            // Quyết định màu sắc dựa trên giá trị difference
+            let color;
+            
+            if (numericDiff < 0) {
+              // Màu đỏ cho giá trị âm
+              color = '#ef4444';
+            } else if (numericDiff > 0) {
+              // Màu xanh cho giá trị dương
+              color = '#22c55e';
+            } else {
+              // Màu vàng cho giá trị bằng 0
+              color = '#eab308';
+            }
+            
+            return {
+              name: stock.symbol,
+              value: stock.market_cap,
+              change: numericDiff,
+              difference: numericDiff,
+              color: color
+            };
+          })
         }
       ]
     };
