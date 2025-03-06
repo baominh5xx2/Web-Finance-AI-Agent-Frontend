@@ -1,7 +1,13 @@
 .env
 node_modules/
 .next/
-public/data/
+public/data/HNX.json
+public/data/VNINDEX.json
+public/data/HNX30.json
+public/data/UPCOM.json
+public/data/VN30.json
+
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
