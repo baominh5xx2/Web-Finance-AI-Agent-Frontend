@@ -1,19 +1,9 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { 
-  ReferenceLine, 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area, 
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Dot,
-  ReferenceDot
-} from 'recharts';
-import { fetchMarketIndex, fetchMarketIndexChart } from '@/app/services/marketindices';
+import { fetchMarketIndex, fetchMarketIndexChart, fetchMultipleIndices } from '@/app/services/marketindices';
+import D3AreaChart from './D3AreaChart';
+import './MarketIndices.css';
 
 // Define interfaces for API data
 interface ApiDataPoint {
@@ -30,10 +20,15 @@ interface ApiResponse {
 // Define interface for index data
 interface IndexData {
   name: string;
-  value: number;
-  change: number;
-  changePercent: number;
-  data: { time: number; value: number; }[];
+  value: number | null;
+  change: number | null;
+  changePercent: number | null;
+  data: ChartDataPoint[];
+}
+
+interface ChartDataPoint {
+  time: string | number;
+  open: number;
 }
 
 // Initial data
@@ -75,24 +70,39 @@ const initialIndices: IndexData[] = [
   },
 ];
 
-// Function để tạo điểm custom cho biểu đồ
-const CustomizedDot = (props: any) => {
-  const { cx, cy, stroke, dataKey, index, payload } = props;
-  
-  if (cx === undefined || cy === undefined) {
-    return null;
-  }
+// Tìm đoạn code render giá trị của các chỉ số
+const formatValue = (value: number | null): string => {
+  if (value === null) return 'N/A';
+  return value.toFixed(2);
+};
 
-  return (
-    <circle 
-      cx={cx} 
-      cy={cy} 
-      r={3}
-      fill="white"
-      stroke={stroke}
-      strokeWidth={2}
-    />
-  );
+const formatChange = (change: number | null): string => {
+  if (change === null) return 'N/A';
+  return change.toFixed(2);
+};
+
+const formatChangePercent = (percent: number | null): string => {
+  if (percent === null) return 'N/A';
+  return `${percent.toFixed(2)}%`;
+};
+
+// Helper function to generate mock chart data
+const generateMockChartData = (baseValue: number): ChartDataPoint[] => {
+  const points: ChartDataPoint[] = [];
+  const intervals = 30; // 30 data points
+  
+  for (let i = 0; i < intervals; i++) {
+    // Add some random variation to create realistic-looking data
+    const randomChange = (Math.random() - 0.5) * 5;
+    const open = baseValue + randomChange;
+    
+    points.push({
+      time: i,
+      open: Number(open.toFixed(2))
+    });
+  }
+  
+  return points;
 };
 
 export default function MarketIndices() {
@@ -101,24 +111,25 @@ export default function MarketIndices() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [apiSuccess, setApiSuccess] = useState(false);
+  const [loadingStartTime, setLoadingStartTime] = useState<number>(0);
 
   // Tạo ref để tham chiếu đến container scroll
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Helper function to format chart data from API response
-  const formatChartData = (apiData: ApiDataPoint[] | null): { time: number; value: number; }[] => {
+  const formatChartData = (apiData: ApiDataPoint[] | null): { time: number; open: number; }[] => {
     if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
       // If no data, create some dummy data for testing
       return Array.from({ length: 30 }, (_, index) => ({
         time: index,
-        value: 1200 + Math.random() * 20
+        open: 1200 + Math.random() * 20
       }));
     }
     
     // Format data with incremental time indices (0, 1, 2...) and price values
     return apiData.map((point, index) => ({
       time: index,
-      value: point.open
+      open: point.open
     }));
   };
 
@@ -126,27 +137,22 @@ export default function MarketIndices() {
   useEffect(() => {
     const fetchMarketData = async () => {
       try {
+        // Ghi nhận thời điểm bắt đầu tải
+        const startTime = performance.now();
+        setLoadingStartTime(startTime);
         setIsLoading(true);
+        
+        // Đảm bảo thông báo "Loading market data..." hiển thị ít nhất 1 giây
+        // để tránh hiện tượng nhấp nháy nếu dữ liệu tải quá nhanh
+        const loadingPromise = new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Load initial data immediately for a responsive UI
         let apiDataLoaded = false;
+        const updatedIndices = [...indices];
         
-        // Define index codes and their corresponding names in the UI
-        const indexMapping = [
-          { code: 'VNINDEX', name: 'VN-Index' },
-          { code: 'HNX', name: 'HNX' },
-          { code: 'UPCOM', name: 'UPCOM' },
-          { code: 'VN30', name: 'VN30' },
-          { code: 'HNX30', name: 'HNX30' }
-        ];
-        
-        // Process each index
-        const updatedIndices = [...initialIndices];
-        
-        // Use hard-coded test data for charts
+        // Generate mock chart data for immediate display
         for (let i = 0; i < updatedIndices.length; i++) {
-          const mockData = Array.from({ length: 30 }, (_, index) => ({
-            time: index,
-            value: 1200 + (Math.random() - 0.5) * 30
-          }));
+          const mockData = generateMockChartData(updatedIndices[i].value || 100);
           
           updatedIndices[i] = {
             ...updatedIndices[i],
@@ -157,82 +163,130 @@ export default function MarketIndices() {
         // Set indices with test data immediately
         setIndices(updatedIndices);
         
-        // Then try to get real data from API if available
-        for (const index of indexMapping) {
-          try {
-            // Fetch basic index data
-            const indexData = await fetchMarketIndex(index.code);
+        // Fetch data from API using the fetchMultipleIndices function
+        try {
+          console.log("Fetching market indices data...");
+          const fetchStartTime = performance.now();
+          
+          // Gọi API với đúng mã chỉ số
+          const allIndices = await fetchMultipleIndices(['VNINDEX', 'HNXINDEX', 'UPCOMINDEX', 'VN30', 'HNX30']);
+          
+          const fetchEndTime = performance.now();
+          console.log(`API fetch completed in ${(fetchEndTime - fetchStartTime).toFixed(2)}ms`);
+          
+          // Debug log chi tiết về dữ liệu
+          console.log('API returned data:', allIndices);
+          
+          apiDataLoaded = true;
+          console.log('✅ Successfully loaded market data from API!');
+          
+          // Update with real data
+          setIndices(prevIndices => {
+            const newIndices = [...prevIndices];
             
-            if (indexData) {
-              apiDataLoaded = true;
-              console.log(`✓ API data loaded successfully for ${index.name}`);
+            // Debug log trạng thái indices trước khi cập nhật
+            console.log('Previous indices:', prevIndices);
+            
+            // Update each index
+            const indexMap: Record<string, string> = {
+              'VNINDEX': 'VN-Index',
+              'HNXINDEX': 'HNX',
+              'UPCOMINDEX': 'UPCOM',
+              'VN30': 'VN30',
+              'HNX30': 'HNX30'
+            };
+            
+            console.log('Index map:', indexMap);
+            
+            for (const [code, name] of Object.entries(indexMap)) {
+              const indexPosition = newIndices.findIndex(item => item.name === name);
               
-              // Update basic index information
-              setIndices(prevIndices => {
-                const updatedIndices = [...prevIndices];
-                const indexPosition = updatedIndices.findIndex(item => item.name === index.name);
+              console.log(`Processing ${code} => ${name}, found at position ${indexPosition}`);
+              
+              if (indexPosition !== -1) {
+                const indexData = allIndices[code]; // This will be null for N/A indices
+                console.log(`Data for ${code}:`, indexData ? `${indexData.length} items` : 'null');
                 
-                if (indexPosition !== -1) {
-                  updatedIndices[indexPosition] = {
-                    ...updatedIndices[indexPosition],
-                    value: indexData.current_price,
-                    change: indexData.price_change,
-                    changePercent: indexData.price_change_percent
+                if (!indexData || indexData.length === 0) {
+                  // Set N/A values
+                  console.log(`${code} has no data, setting to N/A`);
+                  newIndices[indexPosition] = {
+                    ...newIndices[indexPosition],
+                    value: null,
+                    change: null,
+                    changePercent: null,
+                    data: [] // Empty chart data
                   };
-                }
-                
-                return updatedIndices;
-              });
-              
-              // Fetch and format chart data
-              const chartData = await fetchMarketIndexChart(index.code);
-              console.log(`Chart data for ${index.name}:`, chartData); // Debug log
-              
-              if (chartData && chartData.length > 0) {
-                console.log(`✓ Chart data loaded successfully for ${index.name} (${chartData.length} points)`);
-                const formattedChartData = formatChartData(chartData);
-                
-                // Update chart data if we got something
-                if (formattedChartData.length > 0) {
-                  setIndices(prevIndices => {
-                    const updatedIndices = [...prevIndices];
-                    const indexPosition = updatedIndices.findIndex(item => item.name === index.name);
+                } else {
+                  // We have data, calculate current value and changes
+                  try {
+                    // Get the most recent value
+                    const latestValue = indexData[indexData.length - 1]?.open || null;
                     
-                    if (indexPosition !== -1) {
-                      updatedIndices[indexPosition] = {
-                        ...updatedIndices[indexPosition],
-                        data: formattedChartData
+                    // Get the previous value from the day before
+                    const previousValue = indexData[0]?.open || null;
+                    
+                    if (latestValue !== null && previousValue !== null) {
+                      const change = latestValue - previousValue;
+                      const changePercent = (change / previousValue) * 100;
+                      
+                      newIndices[indexPosition] = {
+                        ...newIndices[indexPosition],
+                        value: latestValue,
+                        change: change,
+                        changePercent: changePercent,
+                        data: indexData.map(item => ({
+                          time: item.time,
+                          open: item.open
+                        }))
+                      };
+                    } else {
+                      // If we can't calculate proper values
+                      newIndices[indexPosition] = {
+                        ...newIndices[indexPosition],
+                        value: null,
+                        change: null,
+                        changePercent: null
                       };
                     }
-                    
-                    return updatedIndices;
-                  });
+                  } catch (e) {
+                    console.error(`Error processing data for ${code}:`, e);
+                    newIndices[indexPosition] = {
+                      ...newIndices[indexPosition],
+                      value: null,
+                      change: null,
+                      changePercent: null
+                    };
+                  }
                 }
               }
             }
-          } catch (err) {
-            console.error(`Error loading data for ${index.name}:`, err);
-            // Continue with next index instead of failing completely
-          }
+            
+            return newIndices;
+          });
+          
+          setApiSuccess(true);
+        } catch (e) {
+          console.error("Error fetching market indices:", e);
+          setError(`Failed to load market data: ${e}`);
+          setApiSuccess(false);
         }
+        
+        // Đảm bảo thời gian loading tối thiểu để không nhấp nháy
+        await loadingPromise;
+        
+        // Tính toán và log thời gian tải
+        const endTime = performance.now();
+        console.log(`Total loading time: ${(endTime - startTime).toFixed(2)}ms`);
         
         setIsLoading(false);
-        
-        // Show final success status
-        if (apiDataLoaded) {
-          console.log('✅ Successfully loaded market data from API!');
-          setApiSuccess(true);
-          // You could also show a UI notification here if desired
-        } else {
-          console.warn('⚠️ Using fallback mock data as API data could not be loaded.');
-        }
-      } catch (err) {
-        console.error('Error fetching market data:', err);
-        setError('Failed to load market data');
+      } catch (e) {
+        console.error("Error in market data loading:", e);
+        setError(`Error loading market data: ${e}`);
         setIsLoading(false);
       }
     };
-
+    
     fetchMarketData();
   }, []);
 
@@ -250,15 +304,16 @@ export default function MarketIndices() {
       };
     }
     
-    const avgValue = index.data.reduce((sum, point) => sum + point.value, 0) / index.data.length;
+    // Use 'open' property consistently instead of 'value'
+    const avgValue = index.data.reduce((sum, point) => sum + point.open, 0) / index.data.length;
     
-    // Tìm giá trị cao nhất và thấp nhất
-    const highPoint = Math.max(...index.data.map(point => point.value));
-    const lowPoint = Math.min(...index.data.map(point => point.value));
+    // Tìm giá trị cao nhất và thấp nhất - use 'open' property
+    const highPoint = Math.max(...index.data.map(point => point.open));
+    const lowPoint = Math.min(...index.data.map(point => point.open));
     
-    // Tìm vị trí (index) của các điểm này
-    const highPointIndex = index.data.findIndex(point => point.value === highPoint);
-    const lowPointIndex = index.data.findIndex(point => point.value === lowPoint);
+    // Tìm vị trí (index) của các điểm này - use 'open' property
+    const highPointIndex = index.data.findIndex(point => point.open === highPoint);
+    const lowPointIndex = index.data.findIndex(point => point.open === lowPoint);
     
     return {
       ...index,
@@ -322,20 +377,19 @@ export default function MarketIndices() {
             <div className="market-index-content">
               <div className="market-index-info">
                 <h3 className="market-index-name">{index.name}</h3>
-                <div className={`market-index-value ${index.change >= 0 ? 'positive' : 'negative'}`}>
-                  {index.value !== undefined ? index.value.toFixed(1) : 'N/A'}
+                <div className={`market-index-value ${(index.change ?? 0) >= 0 ? 'positive' : 'negative'}`}>
+                  {formatValue(index.value)}
                 </div>
-                <div className={`market-index-change ${index.change >= 0 ? 'positive' : 'negative'}`}>
-                  <span className="change-arrow">{index.change >= 0 ? '▲' : '▼'}</span>
-                  {index.change !== undefined ? Math.abs(index.change).toFixed(1) : 'N/A'} 
-                  {index.changePercent !== undefined ? `(${Math.abs(index.changePercent).toFixed(2)}%)` : ''}
+                <div className={`market-index-change ${(index.change ?? 0) >= 0 ? 'positive' : 'negative'}`}>
+                  <span className="change-arrow">{(index.change ?? 0) >= 0 ? '▲' : '▼'}</span>
+                  {formatChange(index.change)}({formatChangePercent(index.changePercent)})
                 </div>
               </div>
               <div 
                 className="market-index-chart" 
                 style={{ 
                   width: '120px', 
-                  height: '80px',
+                  height: '60px',
                   position: 'relative',
                   overflow: 'visible'
                 }}
@@ -343,32 +397,20 @@ export default function MarketIndices() {
                 {/* Debug info */}
                 {index.data.length === 0 && <div style={{fontSize: '10px', color: 'red'}}>No data</div>}
                 
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart 
-                    data={index.data.length > 0 ? index.data : [
-                      {time: 0, value: 1200},
-                      {time: 1, value: 1210},
-                      {time: 2, value: 1205}
-                    ]} 
-                    margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
-                  >
-                    <defs>
-                      <linearGradient id={`colorUv${i}`} x1="0" y1="0" x2="0" y2="1"> 
-                        <stop offset="5%" stopColor={index.change >= 0 ? "#22C55E" : "#EF4444"} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={index.change >= 0 ? "#22C55E" : "#EF4444"} stopOpacity={0.1}/>
-                      </linearGradient>
-                    </defs>
-                    {/* Simplified chart for testing */}
-                    <Area 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke={index.change >= 0 ? "#22C55E" : "#EF4444"} 
-                      fillOpacity={1}
-                      fill={`url(#colorUv${i})`}
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {/* D3 Area Chart */}
+                <D3AreaChart 
+                  data={index.data.length > 0 ? index.data.map(point => ({
+                    time: String(point.time),
+                    value: point.open
+                  })) : [
+                    {time: "0", value: 1200},
+                    {time: "1", value: 1210},
+                    {time: "2", value: 1205}
+                  ]}
+                  width={120}
+                  height={60}
+                  isPositive={(index.change ?? 0) >= 0}
+                />
               </div>
             </div>
           </div>
