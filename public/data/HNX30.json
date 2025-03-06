@@ -1,0 +1,382 @@
+{
+  "indexTreemapData": {
+    "name": "Thị trường HNX30",
+    "children": [
+      {
+        "name": "Cổ phiếu",
+        "color": "#2563eb",
+        "children": [
+          {
+            "name": "IDC",
+            "value": 18380996045300,
+            "change": 1.2999999999999972,
+            "difference": 1.2999999999999972,
+            "color": "#22c55e"
+          },
+          {
+            "name": "MBS",
+            "value": 17068931612000,
+            "change": 1.1999999999999993,
+            "difference": 1.1999999999999993,
+            "color": "#22c55e"
+          },
+          {
+            "name": "PVS",
+            "value": 16489837005000,
+            "change": -0.20000000000000284,
+            "difference": -0.20000000000000284,
+            "color": "#ef4444"
+          },
+          {
+            "name": "HUT",
+            "value": 14547945029500,
+            "change": 0.1999999999999993,
+            "difference": 0.1999999999999993,
+            "color": "#22c55e"
+          },
+          {
+            "name": "NVB",
+            "value": 13038423536100,
+            "change": 0.09999999999999964,
+            "difference": 0.09999999999999964,
+            "color": "#22c55e"
+          },
+          {
+            "name": "SHS",
+            "value": 11140247447600,
+            "change": 0.6000000000000014,
+            "difference": 0.6000000000000014,
+            "color": "#22c55e"
+          },
+          {
+            "name": "NTP",
+            "value": 9449890429200,
+            "change": 0.7000000000000028,
+            "difference": 0.7000000000000028,
+            "color": "#22c55e"
+          },
+          {
+            "name": "VCS",
+            "value": 9360000000000,
+            "change": 0.10000000000000142,
+            "difference": 0.10000000000000142,
+            "color": "#22c55e"
+          },
+          {
+            "name": "CEO",
+            "value": 7727811977600,
+            "change": 0.29999999999999893,
+            "difference": 0.29999999999999893,
+            "color": "#22c55e"
+          },
+          {
+            "name": "DHT",
+            "value": 7320049114000,
+            "change": -1.4000000000000057,
+            "difference": -1.4000000000000057,
+            "color": "#ef4444"
+          },
+          {
+            "name": "VC3",
+            "value": 3466681010300,
+            "change": 0.1999999999999993,
+            "difference": 0.1999999999999993,
+            "color": "#22c55e"
+          },
+          {
+            "name": "TNG",
+            "value": 2807567617400,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "TIG",
+            "value": 2207110737000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "LAS",
+            "value": 2200699800000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "PLC",
+            "value": 2044178419800,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "SLS",
+            "value": 2034766171000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "L18",
+            "value": 1719055412800,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "IDV",
+            "value": 1341103599000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "DTD",
+            "value": 1333739812000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "TMB",
+            "value": 1087500000000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "LHC",
+            "value": 1072800000000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "L14",
+            "value": 925779450000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "PVC",
+            "value": 901258539300,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "PVB",
+            "value": 738719931600,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "CAP",
+            "value": 702418390000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "PSD",
+            "value": 694493779600,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "DXP",
+            "value": 676984502900,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "TVD",
+            "value": 562035800000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "HLD",
+            "value": 521399356500,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "DVM",
+            "value": 355073302800,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          }
+        ]
+      }
+    ]
+  },
+  "rawStocksData": [
+    {
+      "symbol": "IDC",
+      "total_value": 70574745.76996619,
+      "market_cap": 18380996045300
+    },
+    {
+      "symbol": "MBS",
+      "total_value": 97563066.0439504,
+      "market_cap": 17068931612000
+    },
+    {
+      "symbol": "PVS",
+      "total_value": 32831821.000530284,
+      "market_cap": 16489837005000
+    },
+    {
+      "symbol": "HUT",
+      "total_value": 85478601.91356725,
+      "market_cap": 14547945029500
+    },
+    {
+      "symbol": "NVB",
+      "total_value": 35284342.400675446,
+      "market_cap": 13038423536100
+    },
+    {
+      "symbol": "SHS",
+      "total_value": 11462613.315374987,
+      "market_cap": 11140247447600
+    },
+    {
+      "symbol": "NTP",
+      "total_value": 86819179.07597448,
+      "market_cap": 9449890429200
+    },
+    {
+      "symbol": "VCS",
+      "total_value": 79252079.56377558,
+      "market_cap": 9360000000000
+    },
+    {
+      "symbol": "CEO",
+      "total_value": 24077739.482145,
+      "market_cap": 7727811977600
+    },
+    {
+      "symbol": "DHT",
+      "total_value": 93535424.71352918,
+      "market_cap": 7320049114000
+    },
+    {
+      "symbol": "VC3",
+      "total_value": 7068012.864862213,
+      "market_cap": 3466681010300
+    },
+    {
+      "symbol": "TNG",
+      "total_value": 11977755.172637008,
+      "market_cap": 2807567617400
+    },
+    {
+      "symbol": "TIG",
+      "total_value": 59255021.79684866,
+      "market_cap": 2207110737000
+    },
+    {
+      "symbol": "LAS",
+      "total_value": 8074102.992406883,
+      "market_cap": 2200699800000
+    },
+    {
+      "symbol": "PLC",
+      "total_value": 67617595.57142544,
+      "market_cap": 2044178419800
+    },
+    {
+      "symbol": "SLS",
+      "total_value": 74074949.65921466,
+      "market_cap": 2034766171000
+    },
+    {
+      "symbol": "L18",
+      "total_value": 26648468.277409904,
+      "market_cap": 1719055412800
+    },
+    {
+      "symbol": "IDV",
+      "total_value": 2714619.7556790356,
+      "market_cap": 1341103599000
+    },
+    {
+      "symbol": "DTD",
+      "total_value": 19043680.879737448,
+      "market_cap": 1333739812000
+    },
+    {
+      "symbol": "TMB",
+      "total_value": 25497986.565766048,
+      "market_cap": 1087500000000
+    },
+    {
+      "symbol": "LHC",
+      "total_value": 78730876.19232216,
+      "market_cap": 1072800000000
+    },
+    {
+      "symbol": "L14",
+      "total_value": 80684679.78323391,
+      "market_cap": 925779450000
+    },
+    {
+      "symbol": "PVC",
+      "total_value": 56455700.09185607,
+      "market_cap": 901258539300
+    },
+    {
+      "symbol": "PVB",
+      "total_value": 18347570.542742286,
+      "market_cap": 738719931600
+    },
+    {
+      "symbol": "CAP",
+      "total_value": 65361596.7803318,
+      "market_cap": 702418390000
+    },
+    {
+      "symbol": "PSD",
+      "total_value": 45592968.873609014,
+      "market_cap": 694493779600
+    },
+    {
+      "symbol": "DXP",
+      "total_value": 52794685.30405512,
+      "market_cap": 676984502900
+    },
+    {
+      "symbol": "TVD",
+      "total_value": 60312348.793000944,
+      "market_cap": 562035800000
+    },
+    {
+      "symbol": "HLD",
+      "total_value": 39095602.384712316,
+      "market_cap": 521399356500
+    },
+    {
+      "symbol": "DVM",
+      "total_value": 7178803.543752043,
+      "market_cap": 355073302800
+    }
+  ],
+  "metadata": {
+    "indexCode": "HNX30",
+    "stockCount": 30,
+    "source": "treemap-api"
+  },
+  "timestamp": "2025-03-06T19:42:46.195Z",
+  "savedAt": "2025-03-06T19:42:46.476Z"
+}

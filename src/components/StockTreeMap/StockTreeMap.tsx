@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import './StockTreeMap.css';
 import { getTreemapColor } from '@/app/services/treemap_color';
@@ -73,6 +73,9 @@ const stats = {
   floorStocks: 2         // Số cổ phiếu giảm sàn
 };
 
+// Thêm hằng số cho thời gian tối đa cache có hiệu lực (12 tiếng tính bằng millisecond)
+const CACHE_MAX_AGE = 12 * 60 * 60 * 1000; // 12 giờ
+
 interface StockTreeMapProps {
   width?: string | number;
   height?: number;
@@ -92,20 +95,198 @@ export default function StockTreeMap({
   const [treemapData, setTreemapData] = useState<TreemapData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Thêm state nội bộ để theo dõi chỉ số được chọn
+  const [currentIndex, setCurrentIndex] = useState<string>(selectedIndex);
+  
+  // Sử dụng ref để theo dõi các chỉ số đã được load
+  const loadedIndicesRef = useRef<Set<string>>(new Set());
+  // Sử dụng ref để theo dõi các request đang chạy
+  const pendingRequestsRef = useRef<Record<string, boolean>>({});
+  // Thêm ref để lưu trữ dữ liệu treemap cho mỗi chỉ số
+  const cachedTreemapDataRef = useRef<Record<string, TreemapData>>({});
+
+  // Đồng bộ state nội bộ với prop từ bên ngoài
+  useEffect(() => {
+    if (selectedIndex !== currentIndex) {
+      setCurrentIndex(selectedIndex);
+    }
+  }, [selectedIndex]);
 
   // Xử lý khi người dùng chọn chỉ số
   const handleIndexSelect = (indexId: string) => {
+    console.log(`[Component] User selected index: ${indexId}`);
+    // Cập nhật state nội bộ
+    setCurrentIndex(indexId);
+    
+    // Gọi callback nếu có
     if (onIndexChange) {
       onIndexChange(indexId);
     }
+    
+    // Gọi trực tiếp fetchTreemapData để đảm bảo dữ liệu được cập nhật ngay lập tức
+    fetchTreemapData(indexId);
   };
-  // Fetch data from API
+  
+  // Thêm hàm kiểm tra cache có hết hạn chưa
+  const isCacheExpired = (createdAt: number): boolean => {
+    const now = new Date().getTime();
+    const age = now - createdAt;
+    const isExpired = age > CACHE_MAX_AGE;
+    
+    if (isExpired) {
+      console.log(`[Component] Cache created at ${new Date(createdAt).toLocaleString()} has expired (age: ${Math.round(age / (60 * 60 * 1000))} hours)`);
+    } else {
+      console.log(`[Component] Cache is still valid (age: ${Math.round(age / (60 * 1000))} minutes)`);
+    }
+    
+    return isExpired;
+  };
+
+  // Fetch data from API or cache
   const fetchTreemapData = async (indexCode: string) => {
     try {
+      // Kiểm tra xem request đã đang chạy hay chưa
+      if (pendingRequestsRef.current[indexCode]) {
+        console.log(`[Component] Request for ${indexCode} is already in progress, skipping`);
+        return;
+      }
+      
+      // Đánh dấu là request đang chạy
+      pendingRequestsRef.current[indexCode] = true;
+      
+      // Kiểm tra xem đã load trước đó chưa và đã có dữ liệu chưa
+      if (loadedIndicesRef.current.has(indexCode) && treemapData) {
+        console.log(`[Component] Index ${indexCode} already loaded in memory, skipping fetch`);
+        pendingRequestsRef.current[indexCode] = false;
+        return;
+      }
+      
       setIsLoading(true);
       setError(null);
       
+      console.log(`[Component] Fetching data for index: ${indexCode}`);
+      
+      // STEP 1: Thử đọc từ file JSON trực tiếp từ thư mục public
+      let cacheSuccess = false;
+      
+      try {
+        console.log(`[Component] Attempting to load ${indexCode}.json directly from public/data folder`);
+        console.time("CacheLoad");
+        
+        // Thêm timestamp để tránh cache của trình duyệt
+        const timestamp = new Date().getTime();
+        const cacheUrl = `/data/${indexCode}.json?t=${timestamp}`;
+        
+        try {
+          // Thử tải file JSON từ thư mục public
+          const response = await fetch(cacheUrl, {
+            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+            // Đặt timeout 2 giây để tránh chờ quá lâu nếu file không tồn tại
+            signal: AbortSignal.timeout(2000)
+          });
+          
+          console.log(`[Component] Cache file response status: ${response.status}`);
+          
+          if (response.ok) {
+            // Đọc dữ liệu từ file cache
+            const jsonData = await response.json();
+            console.log(`[Component] Successfully loaded JSON file from public folder`);
+            
+            // Kiểm tra cấu trúc dữ liệu
+            let validTreemapData = null;
+            let cacheCreatedAt = null;
+            
+            if (jsonData.indexTreemapData) {
+              console.log('[Component] Using indexTreemapData from JSON file');
+              validTreemapData = jsonData.indexTreemapData;
+              
+              // Lấy thời gian tạo cache từ nhiều định dạng có thể có
+              // Ưu tiên kiểm tra cấu trúc mới
+              if (jsonData.cacheMeta && jsonData.cacheMeta.createdAt) {
+                cacheCreatedAt = jsonData.cacheMeta.createdAt;
+                console.log(`[Component] Cache was created at (from cacheMeta): ${new Date(cacheCreatedAt).toLocaleString()}`);
+              } 
+              // Kiểm tra định dạng cũ (savedAt hoặc timestamp)
+              else if (jsonData.savedAt) {
+                // Chuyển đổi chuỗi ISO sang timestamp
+                cacheCreatedAt = new Date(jsonData.savedAt).getTime();
+                console.log(`[Component] Cache was created at (from savedAt): ${new Date(cacheCreatedAt).toLocaleString()}`);
+              }
+              else if (jsonData.timestamp) {
+                // Chuyển đổi chuỗi ISO sang timestamp
+                cacheCreatedAt = new Date(jsonData.timestamp).getTime();
+                console.log(`[Component] Cache was created at (from timestamp): ${new Date(cacheCreatedAt).toLocaleString()}`);
+              }
+              // Kiểm tra nếu timestamp nằm trong metadata (cấu trúc khác)
+              else if (jsonData.metadata && jsonData.metadata.timestamp) {
+                cacheCreatedAt = new Date(jsonData.metadata.timestamp).getTime();
+                console.log(`[Component] Cache was created at (from metadata.timestamp): ${new Date(cacheCreatedAt).toLocaleString()}`);
+              }
+              else {
+                console.warn('[Component] Cache file does not contain any recognized timestamp field');
+              }
+              
+              // Kiểm tra cache có hết hạn chưa nếu có thời gian
+              if (cacheCreatedAt) {
+                if (isCacheExpired(cacheCreatedAt)) {
+                  console.log(`[Component] Cache has expired, will fetch fresh data`);
+                  // Đánh dấu là chưa load để fetch lại
+                  loadedIndicesRef.current.delete(indexCode);
+                  // Bỏ qua cache này
+                  validTreemapData = null;
+                }
+              } else {
+                console.warn('[Component] Unable to determine cache age, treating as valid');
+              }
+            } else {
+              console.log('[Component] JSON file does not contain expected indexTreemapData structure');
+            }
+            
+            if (validTreemapData && validTreemapData.children) {
+              console.log('[Component] ✅ Valid treemap data found in JSON file, using it');
+              
+              // Lưu vào cache
+              cachedTreemapDataRef.current[indexCode] = validTreemapData;
+              
+              setTreemapData(validTreemapData);
+              setIsLoading(false);
+              
+              // Đánh dấu đã load chỉ số này
+              loadedIndicesRef.current.add(indexCode);
+              cacheSuccess = true;
+              console.timeEnd("CacheLoad");
+              
+              // Đánh dấu request đã kết thúc và thoát
+              pendingRequestsRef.current[indexCode] = false;
+              return; // Chắc chắn thoát hàm ngay lập tức khi cache hợp lệ
+            } else {
+              console.warn('[Component] JSON file exists but data structure is invalid or expired, proceeding to backend API call');
+            }
+          } else {
+            console.log(`[Component] Cache file not found in public folder, status: ${response.status}`);
+          }
+        } catch (fetchError: any) {
+          console.warn(`[Component] Error fetching cache file: ${fetchError.message}`);
+        }
+        
+        console.timeEnd("CacheLoad");
+      } catch (cacheError) {
+        console.error(`[Component] Error in cache loading process:`, cacheError);
+      }
+      
+      if (cacheSuccess) {
+        console.log('[Component] Cache load was successful, we should not see this message');
+        pendingRequestsRef.current[indexCode] = false;
+        return;
+      }
+      
+      // STEP 2: Nếu không có cache, mới gọi API
+      console.log(`[Component] No valid cache found, calling backend API for ${indexCode}...`);
       const apiIndex = INDEX_API_MAP[indexCode] || 'HOSE';
+      
+      // Gọi API lấy dữ liệu
+      console.time("BackendAPICall");
+      console.log(`[Component] Fetching from backend API: http://localhost:8000/api/v1/treemap/${apiIndex}`);
       const response = await fetch(`http://localhost:8000/api/v1/treemap/${apiIndex}`);
       
       if (!response.ok) {
@@ -113,88 +294,78 @@ export default function StockTreeMap({
       }
       
       const data: ApiResponse = await response.json();
+      console.timeEnd("BackendAPICall");
       
       if (!data.success || !data.data) {
         throw new Error(data.message || 'Failed to fetch data');
       }
       
-      // Transform API data to TreemapData format with colors
+      console.log(`[Component] Successfully received data from backend API with ${data.data.length} stocks`);
+      
+      // Transform API data to TreemapData format
+      console.time("TransformData");
       const transformedData = await transformApiData(data.data, indexCode);
+      console.timeEnd("TransformData");
+      
+      // STEP 3: Lưu dữ liệu để tái sử dụng sau này - bằng cách POST lên API
+      console.time("SaveCache");
+      console.log(`[Component] Saving transformed data to cache for future use...`);
+      
+      try {
+        // Tạo dữ liệu để lưu cache với metadata
+        const dataToCache = {
+          indexTreemapData: transformedData,
+          cacheMeta: {
+            createdAt: new Date().getTime(),
+            source: `http://localhost:8000/api/v1/treemap/${apiIndex}`,
+            indexCode: indexCode
+          }
+        };
+        
+        // Lưu vào file JSON trong thư mục public/data
+        const cacheResponse = await fetch(`/api/index-data/${indexCode}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(dataToCache),
+        });
+        
+        if (cacheResponse.ok) {
+          console.log(`[Component] ✅ Successfully saved cache file for ${indexCode}`);
+        } else {
+          console.warn(`[Component] Failed to save cache: ${cacheResponse.status} ${cacheResponse.statusText}`);
+        }
+      } catch (error) {
+        console.error(`[Component] Error saving cache:`, error);
+      }
+      
+      console.timeEnd("SaveCache");
+      
+      // Sau khi transform API data thành công
+      console.log(`[Component] Setting transformed data for ${indexCode}`);
+      
+      // Lưu vào cache
+      cachedTreemapDataRef.current[indexCode] = transformedData;
+      
       setTreemapData(transformedData);
+      setIsLoading(false);
+      
+      // Đánh dấu đã tải dữ liệu cho index này
+      loadedIndicesRef.current.add(indexCode);
       
     } catch (err) {
-      console.error('Error fetching treemap data:', err);
+      console.error('[Component] Error fetching treemap data:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
+      // Đánh dấu là request đã hoàn thành
+      pendingRequestsRef.current[indexCode] = false;
       setIsLoading(false);
     }
   };
-
-  // Transform API data to TreemapData format
-  const transformApiData = async (apiData: ApiStockData[], indexCode: string): Promise<TreemapData> => {
-    // Sắp xếp theo vốn hóa giảm dần và lấy top 50 cổ phiếu
-    const sortedStocks = apiData
-      .sort((a, b) => b.market_cap - a.market_cap)
-      .slice(0, 35);
-    
-    // Lấy dữ liệu difference cho từng cổ phiếu từ API treemap_color
-    const stocksWithDifference = await Promise.all(
-      sortedStocks.map(async (stock) => {
-        try {
-          // Gọi API để lấy dữ liệu difference
-          const stockData = await getTreemapColor(stock.symbol);
-          return {
-            ...stock,
-            apiDifference: stockData.difference,
-            percentageChange: stockData.percentage_change
-          };
-        } catch (error) {
-          console.error(`Error fetching data for ${stock.symbol}:`, error);
-          // Sử dụng dữ liệu difference mặc định nếu API thất bại
-          return stock;
-        }
-      })
-    );
-    
-    return {
-      name: `Thị trường ${MARKET_INDICES.find(i => i.id === indexCode)?.name || indexCode}`,
-      children: [
-        {
-          name: "Cổ phiếu",
-          color: "#2563eb",
-          children: stocksWithDifference.map(stock => {
-            // Sử dụng apiDifference nếu có, nếu không thì dùng difference từ dữ liệu gốc
-            const diffValue = 'apiDifference' in stock ? stock.apiDifference : stock.difference;
-            
-            // Chuyển đổi diffValue thành số để so sánh chính xác
-            const numericDiff = Number(diffValue);
-            
-            // Quyết định màu sắc dựa trên giá trị difference
-            let color;
-            
-            if (numericDiff < 0) {
-              // Màu đỏ cho giá trị âm
-              color = '#ef4444';
-            } else if (numericDiff > 0) {
-              // Màu xanh cho giá trị dương
-              color = '#22c55e';
-            } else {
-              // Màu vàng cho giá trị bằng 0
-              color = '#eab308';
-            }
-            
-            return {
-              name: stock.symbol,
-              value: stock.market_cap,
-              change: numericDiff,
-              difference: numericDiff,
-              color: color
-            };
-          })
-        }
-      ]
-    };
-  };
+  
+  // Sử dụng useCallback để đảm bảo hàm này không được tạo lại mỗi khi component re-render
+  const fetchTreemapDataCallback = useCallback(fetchTreemapData, []);
 
   // Lấy kích thước thực của container
   useEffect(() => {
@@ -213,10 +384,29 @@ export default function StockTreeMap({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Fetch data when selectedIndex changes
+  // Fetch data when currentIndex changes
   useEffect(() => {
-    fetchTreemapData(selectedIndex);
-  }, [selectedIndex]);
+    console.log(`[Component] Current index changed to: ${currentIndex}`);
+    
+    // Kiểm tra xem đã load index này chưa
+    if (loadedIndicesRef.current.has(currentIndex)) {
+      console.log(`[Component] Index ${currentIndex} already loaded, retrieving from cache`);
+      
+      // Lấy dữ liệu từ cache và hiển thị
+      if (cachedTreemapDataRef.current[currentIndex]) {
+        console.log(`[Component] Displaying cached data for ${currentIndex}`);
+        setTreemapData(cachedTreemapDataRef.current[currentIndex]);
+        setIsLoading(false);
+        return;
+      } else {
+        console.warn(`[Component] Index ${currentIndex} marked as loaded but no data found in cache`);
+      }
+    }
+    
+    // Chưa load, tiến hành fetch
+    fetchTreemapDataCallback(currentIndex);
+    
+  }, [currentIndex, fetchTreemapDataCallback]);
 
   // Render treemap when data or dimensions change
   useEffect(() => {
@@ -312,21 +502,84 @@ export default function StockTreeMap({
     });
   }, [dimensions, treemapData]);
 
+  // Transform API data to TreemapData format
+  const transformApiData = async (apiData: ApiStockData[], indexCode: string): Promise<TreemapData> => {
+    console.log(`[Component] Transforming API data to TreemapData format for ${indexCode}...`);
+    
+    // Sắp xếp theo vốn hóa giảm dần và lấy top 35 cổ phiếu
+    const sortedStocks = apiData
+      .sort((a, b) => b.market_cap - a.market_cap)
+      .slice(0, 35);
+    
+    // Lấy dữ liệu difference cho từng cổ phiếu từ API treemap_color
+    console.log(`[Component] Fetching detailed data for ${sortedStocks.length} stocks...`);
+    const stocksWithDifference = await Promise.all(
+      sortedStocks.map(async (stock) => {
+        try {
+          // Gọi API để lấy dữ liệu difference
+          const stockData = await getTreemapColor(stock.symbol);
+          return {
+            ...stock,
+            apiDifference: stockData.difference,
+            percentageChange: stockData.percentage_change
+          };
+        } catch (error) {
+          console.error(`Error fetching data for ${stock.symbol}:`, error);
+          // Sử dụng dữ liệu difference mặc định nếu API thất bại
+          return stock;
+        }
+      })
+    );
+    
+    console.log(`[Component] Creating treemap data structure...`);
+    
+    // Tạo dữ liệu treemap
+    const result = {
+      name: `Thị trường ${MARKET_INDICES.find(i => i.id === indexCode)?.name || indexCode}`,
+      children: [
+        {
+          name: "Cổ phiếu",
+          color: "#2563eb",
+          children: stocksWithDifference.map(stock => {
+            // Sử dụng apiDifference nếu có, nếu không thì dùng difference từ dữ liệu gốc
+            const diffValue = 'apiDifference' in stock ? stock.apiDifference : stock.difference;
+            
+            // Chuyển đổi diffValue thành số để so sánh chính xác
+            const numericDiff = Number(diffValue);
+            
+            // Quyết định màu sắc dựa trên giá trị difference
+            let color;
+            
+            if (numericDiff < 0) {
+              // Màu đỏ cho giá trị âm
+              color = '#ef4444';
+            } else if (numericDiff > 0) {
+              // Màu xanh cho giá trị dương
+              color = '#22c55e';
+            } else {
+              // Màu vàng cho giá trị bằng 0
+              color = '#eab308';
+            }
+            
+            return {
+              name: stock.symbol,
+              value: stock.market_cap,
+              change: numericDiff,
+              difference: numericDiff,
+              color: color
+            };
+          })
+        }
+      ]
+    };
+    
+    console.log(`[Component] Transformation complete. Generated TreemapData with ${result.children[0].children.length} stocks.`);
+    return result;
+  };
+
   return (
     <div className="stock-treemap-container">
       <div className="stock-treemap-header">
-        <h2 className="stock-treemap-title">Bản đồ thị trường</h2>
-        <div className="stock-treemap-tabs">
-          {MARKET_INDICES.map((index) => (
-            <button
-              key={index.id}
-              className={`stock-treemap-tab ${selectedIndex === index.id ? 'active' : ''}`}
-              onClick={() => handleIndexSelect(index.id)}
-            >
-              {index.name}
-            </button>
-          ))}
-        </div>
       </div>
       <div className="stock-treemap-wrapper" ref={containerRef}>
         {isLoading && (

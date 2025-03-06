@@ -1,0 +1,442 @@
+{
+  "indexTreemapData": {
+    "name": "Thị trường UPCOM",
+    "children": [
+      {
+        "name": "Cổ phiếu",
+        "color": "#2563eb",
+        "children": [
+          {
+            "name": "VGI",
+            "value": 250033871024000,
+            "change": 0.7000000000000028,
+            "difference": 0.7000000000000028,
+            "color": "#22c55e"
+          },
+          {
+            "name": "ACV",
+            "value": 231240029212792,
+            "change": -1.5,
+            "difference": -1.5,
+            "color": "#ef4444"
+          },
+          {
+            "name": "MCH",
+            "value": 156228562701456,
+            "change": 0.19999999999998863,
+            "difference": 0.19999999999998863,
+            "color": "#22c55e"
+          },
+          {
+            "name": "MVN",
+            "value": 90436692276000,
+            "change": -0.3999999999999915,
+            "difference": -0.3999999999999915,
+            "color": "#ef4444"
+          },
+          {
+            "name": "VEA",
+            "value": 53412444800000,
+            "change": 0.29999999999999716,
+            "difference": 0.29999999999999716,
+            "color": "#22c55e"
+          },
+          {
+            "name": "FOX",
+            "value": 49868030382492,
+            "change": 1.7000000000000028,
+            "difference": 1.7000000000000028,
+            "color": "#22c55e"
+          },
+          {
+            "name": "VEF",
+            "value": 30466667215600,
+            "change": -1.1999999999999886,
+            "difference": -1.1999999999999886,
+            "color": "#ef4444"
+          },
+          {
+            "name": "SSH",
+            "value": 25744875000000,
+            "change": 0.8000000000000114,
+            "difference": 0.8000000000000114,
+            "color": "#22c55e"
+          },
+          {
+            "name": "MSR",
+            "value": 22855837803480,
+            "change": 0.40000000000000213,
+            "difference": 0.40000000000000213,
+            "color": "#22c55e"
+          },
+          {
+            "name": "QNS",
+            "value": 18511452151703,
+            "change": 0.30000000000000426,
+            "difference": 0.30000000000000426,
+            "color": "#22c55e"
+          },
+          {
+            "name": "VSF",
+            "value": 17420500000000,
+            "change": 0.6000000000000014,
+            "difference": 0.6000000000000014,
+            "color": "#22c55e"
+          },
+          {
+            "name": "DNH",
+            "value": 16051200000000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "PHP",
+            "value": 14148867040000,
+            "change": 0.5,
+            "difference": 0.5,
+            "color": "#22c55e"
+          },
+          {
+            "name": "OIL",
+            "value": 13775936940000,
+            "change": -0.3000000000000007,
+            "difference": -0.3000000000000007,
+            "color": "#ef4444"
+          },
+          {
+            "name": "SNZ",
+            "value": 13403108080000,
+            "change": 0,
+            "difference": 0,
+            "color": "#eab308"
+          },
+          {
+            "name": "IDP",
+            "value": 13040743592000,
+            "change": null,
+            "difference": null,
+            "color": "#eab308"
+          },
+          {
+            "name": "SJG",
+            "value": 10772707351968,
+            "change": 1.7999999999999972,
+            "difference": 1.7999999999999972,
+            "color": "#22c55e"
+          },
+          {
+            "name": "MML",
+            "value": 10329289946863,
+            "change": 0.8999999999999986,
+            "difference": 0.8999999999999986,
+            "color": "#22c55e"
+          },
+          {
+            "name": "VNZ",
+            "value": 10316540096000,
+            "change": 0,
+            "difference": 0,
+            "color": "#eab308"
+          },
+          {
+            "name": "HNG",
+            "value": 8406164185785,
+            "change": 0.09999999999999964,
+            "difference": 0.09999999999999964,
+            "color": "#22c55e"
+          },
+          {
+            "name": "BVB",
+            "value": 8205953217050,
+            "change": 0.10000000000000142,
+            "difference": 0.10000000000000142,
+            "color": "#22c55e"
+          },
+          {
+            "name": "PAP",
+            "value": 8031840000000,
+            "change": -0.10000000000000142,
+            "difference": -0.10000000000000142,
+            "color": "#ef4444"
+          },
+          {
+            "name": "TAL",
+            "value": 7964960850000,
+            "change": 0,
+            "difference": 0,
+            "color": "#eab308"
+          },
+          {
+            "name": "ABB",
+            "value": 7859034133866,
+            "change": 0.10000000000000053,
+            "difference": 0.10000000000000053,
+            "color": "#22c55e"
+          },
+          {
+            "name": "AIG",
+            "value": 7819169291234,
+            "change": 0.29999999999999716,
+            "difference": 0.29999999999999716,
+            "color": "#22c55e"
+          },
+          {
+            "name": "SGP",
+            "value": 7610770792707,
+            "change": 0.20000000000000284,
+            "difference": 0.20000000000000284,
+            "color": "#22c55e"
+          },
+          {
+            "name": "VGT",
+            "value": 6891000000000,
+            "change": 0.3000000000000007,
+            "difference": 0.3000000000000007,
+            "color": "#22c55e"
+          },
+          {
+            "name": "DVN",
+            "value": 6727719000000,
+            "change": 0.1999999999999993,
+            "difference": 0.1999999999999993,
+            "color": "#22c55e"
+          },
+          {
+            "name": "VBB",
+            "value": 6718187905890,
+            "change": 0,
+            "difference": 0,
+            "color": "#eab308"
+          },
+          {
+            "name": "VCR",
+            "value": 6508740000000,
+            "change": 0.10000000000000142,
+            "difference": 0.10000000000000142,
+            "color": "#22c55e"
+          },
+          {
+            "name": "PGB",
+            "value": 6496140000000,
+            "change": 0.1999999999999993,
+            "difference": 0.1999999999999993,
+            "color": "#22c55e"
+          },
+          {
+            "name": "HND",
+            "value": 6406500000000,
+            "change": -0.09999999999999964,
+            "difference": -0.09999999999999964,
+            "color": "#ef4444"
+          },
+          {
+            "name": "SBH",
+            "value": 6335475000000,
+            "change": 0.3999999999999986,
+            "difference": 0.3999999999999986,
+            "color": "#22c55e"
+          },
+          {
+            "name": "QTP",
+            "value": 6246450000000,
+            "change": 0.09999999999999964,
+            "difference": 0.09999999999999964,
+            "color": "#22c55e"
+          },
+          {
+            "name": "CC1",
+            "value": 6156942729750,
+            "change": -0.3000000000000007,
+            "difference": -0.3000000000000007,
+            "color": "#ef4444"
+          }
+        ]
+      }
+    ]
+  },
+  "rawStocksData": [
+    {
+      "symbol": "VGI",
+      "total_value": 83365817.63272351,
+      "market_cap": 250033871024000
+    },
+    {
+      "symbol": "ACV",
+      "total_value": 43714873.468053535,
+      "market_cap": 231240029212792
+    },
+    {
+      "symbol": "MCH",
+      "total_value": 18164396.629196648,
+      "market_cap": 156228562701456
+    },
+    {
+      "symbol": "MVN",
+      "total_value": 73461297.07897036,
+      "market_cap": 90436692276000
+    },
+    {
+      "symbol": "VEA",
+      "total_value": 66365755.41552389,
+      "market_cap": 53412444800000
+    },
+    {
+      "symbol": "FOX",
+      "total_value": 67195488.82033125,
+      "market_cap": 49868030382492
+    },
+    {
+      "symbol": "VEF",
+      "total_value": 58202525.84684313,
+      "market_cap": 30466667215600
+    },
+    {
+      "symbol": "SSH",
+      "total_value": 41433576.14547094,
+      "market_cap": 25744875000000
+    },
+    {
+      "symbol": "MSR",
+      "total_value": 60359688.99966518,
+      "market_cap": 22855837803480
+    },
+    {
+      "symbol": "QNS",
+      "total_value": 49929162.37539101,
+      "market_cap": 18511452151703
+    },
+    {
+      "symbol": "VSF",
+      "total_value": 43681709.339931086,
+      "market_cap": 17420500000000
+    },
+    {
+      "symbol": "DNH",
+      "total_value": 28330102.79664087,
+      "market_cap": 16051200000000
+    },
+    {
+      "symbol": "PHP",
+      "total_value": 83225159.92236678,
+      "market_cap": 14148867040000
+    },
+    {
+      "symbol": "OIL",
+      "total_value": 79616714.37318598,
+      "market_cap": 13775936940000
+    },
+    {
+      "symbol": "SNZ",
+      "total_value": 60487106.3530087,
+      "market_cap": 13403108080000
+    },
+    {
+      "symbol": "IDP",
+      "total_value": 81357200.94043952,
+      "market_cap": 13040743592000
+    },
+    {
+      "symbol": "SJG",
+      "total_value": 13733636.57431028,
+      "market_cap": 10772707351968
+    },
+    {
+      "symbol": "MML",
+      "total_value": 85460346.32023679,
+      "market_cap": 10329289946863
+    },
+    {
+      "symbol": "VNZ",
+      "total_value": 32830305.307226438,
+      "market_cap": 10316540096000
+    },
+    {
+      "symbol": "HNG",
+      "total_value": 99434135.83754614,
+      "market_cap": 8406164185785
+    },
+    {
+      "symbol": "BVB",
+      "total_value": 24270766.239301,
+      "market_cap": 8205953217050
+    },
+    {
+      "symbol": "PAP",
+      "total_value": 82708890.79781261,
+      "market_cap": 8031840000000
+    },
+    {
+      "symbol": "TAL",
+      "total_value": 53122818.34526736,
+      "market_cap": 7964960850000
+    },
+    {
+      "symbol": "ABB",
+      "total_value": 20545751.89987401,
+      "market_cap": 7859034133866
+    },
+    {
+      "symbol": "AIG",
+      "total_value": 15790498.968391428,
+      "market_cap": 7819169291234
+    },
+    {
+      "symbol": "SGP",
+      "total_value": 38115142.212489136,
+      "market_cap": 7610770792707
+    },
+    {
+      "symbol": "VGT",
+      "total_value": 57400312.99347923,
+      "market_cap": 6891000000000
+    },
+    {
+      "symbol": "DVN",
+      "total_value": 61498712.62471915,
+      "market_cap": 6727719000000
+    },
+    {
+      "symbol": "VBB",
+      "total_value": 4052915.2587424326,
+      "market_cap": 6718187905890
+    },
+    {
+      "symbol": "VCR",
+      "total_value": 85914167.90682068,
+      "market_cap": 6508740000000
+    },
+    {
+      "symbol": "PGB",
+      "total_value": 27701874.08627707,
+      "market_cap": 6496140000000
+    },
+    {
+      "symbol": "HND",
+      "total_value": 95834903.45172806,
+      "market_cap": 6406500000000
+    },
+    {
+      "symbol": "SBH",
+      "total_value": 23288723.25123541,
+      "market_cap": 6335475000000
+    },
+    {
+      "symbol": "QTP",
+      "total_value": 6937390.095738392,
+      "market_cap": 6246450000000
+    },
+    {
+      "symbol": "CC1",
+      "total_value": 54577756.61441379,
+      "market_cap": 6156942729750
+    }
+  ],
+  "metadata": {
+    "indexCode": "UPCOM",
+    "stockCount": 35,
+    "source": "treemap-api"
+  },
+  "timestamp": "2025-03-06T19:42:39.022Z",
+  "savedAt": "2025-03-06T19:42:46.475Z"
+}
