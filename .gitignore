@@ -1,12 +1,12 @@
 .env
 node_modules/
 .next/
-public/data/HNX.json
-public/data/VNINDEX.json
-public/data/HNX30.json
-public/data/UPCOM.json
-public/data/VN30.json
 
+# Cache files for stock data
+# Loại trừ tất cả các file JSON trong thư mục public/data/
+public/data/*.json
+# Giữ lại thư mục public/data/ nhưng không có file nào trong đó
+!public/data/.gitkeep
 
 # Logs
 npm-debug.log*
