@@ -545,18 +545,33 @@ export default function StockTreeMap({
           .attr("font-size", `${valueFontSize}px`)
           .attr("text-anchor", "middle")
           .text((d: any) => {
-            // Chia cho 1 tỷ và format số
-            const valueInBillions = d.data.value / 1000000000;
-            const formattedValue = new Intl.NumberFormat('en-US', {
-              minimumFractionDigits: 1,
-              maximumFractionDigits: 1
-            }).format(valueInBillions);
-            
-            // Rút gọn định dạng cho các ô nhỏ hơn
-            if (cellArea < 8000) {
-              return `${formattedValue}`;
+            // Kiểm tra nếu có displayValue và không phải NaN
+            if (d.data.displayValue && !isNaN(d.data.displayValue)) {
+              const valueInBillions = d.data.displayValue / 1000000000;
+              const formattedValue = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1
+              }).format(valueInBillions);
+              
+              // Rút gọn định dạng cho các ô nhỏ hơn
+              if (cellArea < 8000) {
+                return `${formattedValue}`;
+              }
+              return `${formattedValue} tỷ`;
             }
-            return `${formattedValue} tỷ`;
+            
+            // Nếu có percentage_change, hiển thị nó
+            if (d.data.change !== undefined && !isNaN(d.data.change)) {
+              const changeValue = Number(d.data.change);
+              const formattedChange = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                signDisplay: 'always'
+              }).format(changeValue);
+              return `${formattedChange}%`;
+            }
+            
+            return ''; // Trả về chuỗi rỗng nếu không có giá trị hợp lệ
           });
       }
     });
@@ -603,9 +618,11 @@ export default function StockTreeMap({
           children: stocksWithDifference.map(stock => {
             // Sử dụng apiDifference nếu có, nếu không thì dùng difference từ dữ liệu gốc
             const diffValue = 'apiDifference' in stock ? stock.apiDifference : stock.difference;
+            const percentageValue = 'percentageChange' in stock ? stock.percentageChange : 0;
             
             // Chuyển đổi diffValue thành số để so sánh chính xác
             const numericDiff = Number(diffValue);
+            const numericPercentage = Number(percentageValue);
             
             // Quyết định màu sắc dựa trên giá trị difference
             let color;
@@ -621,12 +638,17 @@ export default function StockTreeMap({
               color = '#eab308';
             }
             
+            // Sử dụng giá trị tuyệt đối của percentage_change để xác định kích thước ô
+            // và thêm một giá trị nhỏ để tránh ô có kích thước 0
+            const absolutePercentage = Math.abs(numericPercentage) + 0.01;
+            
             return {
               name: stock.symbol,
-              value: stock.market_cap,
-              change: numericDiff,
+              value: absolutePercentage * 1000, // Nhân với 1000 để tăng sự khác biệt về kích thước
+              change: numericPercentage, // Lưu giá trị phần trăm thay đổi
               difference: numericDiff,
-              color: color
+              color: color,
+              displayValue: stock.market_cap // Giữ lại giá trị vốn hóa để hiển thị
             };
           })
         }
