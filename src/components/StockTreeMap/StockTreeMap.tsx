@@ -489,40 +489,76 @@ export default function StockTreeMap({
       const cell = d3.select(this);
       const cellWidth = d.x1 - d.x0;
       const cellHeight = d.y1 - d.y0;
+      const cellArea = cellWidth * cellHeight; // Tính diện tích của ô
       
       // Chỉ hiển thị text nếu ô đủ lớn
-      if (cellWidth < 50 || cellHeight < 35) return;
+      if (cellWidth < 40 || cellHeight < 30) return;
 
       const centerX = cellWidth / 2;
       const centerY = cellHeight / 2;
       
-      // Tên cổ phiếu
+      // Tính toán kích thước font theo từng ngưỡng diện tích cụ thể
+      let titleFontSize, valueFontSize;
+      
+      // Sử dụng các ngưỡng diện tích cố định dựa trên kích thước thực tế của các ô
+      if (cellArea >= 100000) { // Ô rất lớn (như VCB)
+        titleFontSize = 32;
+        valueFontSize = 20;
+      } else if (cellArea >= 50000) { // Ô lớn (như BID, HPG)
+        titleFontSize = 26;
+        valueFontSize = 18;
+      } else if (cellArea >= 25000) { // Ô trung bình lớn (như TCB, VIC)
+        titleFontSize = 22;
+        valueFontSize = 16;
+      } else if (cellArea >= 15000) { // Ô trung bình (như GAS, VHM)
+        titleFontSize = 18;
+        valueFontSize = 14;
+      } else if (cellArea >= 10000) { // Ô trung bình nhỏ (như ACB, LPB)
+        titleFontSize = 16;
+        valueFontSize = 12;
+      } else if (cellArea >= 5000) { // Ô nhỏ (như PLX, SSB)
+        titleFontSize = 14;
+        valueFontSize = 10;
+      } else { // Ô rất nhỏ (như VRE, TPB)
+        titleFontSize = 12;
+        valueFontSize = 9;
+      }
+
+      // Tên cổ phiếu - đặt ở trung tâm ô hơn
       cell.append("text")
         .attr("x", centerX)
-        .attr("y", centerY - 10)
+        .attr("y", centerY - Math.min(12, cellHeight * 0.15)) // Điều chỉnh vị trí theo chiều cao ô
         .attr("fill", "#fff")
         .attr("font-weight", "bold")
-        .attr("font-size", cellWidth < 70 ? "11px" : "13px")
+        .attr("font-size", `${titleFontSize}px`)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
         .text((d: any) => d.data.name);
       
-      // Giá trị cổ phiếu ở dưới tên
-      cell.append("text")
-        .attr("x", centerX)
-        .attr("y", centerY + 10)
-        .attr("fill", "#fff")
-        .attr("font-size", cellWidth < 70 ? "9px" : "11px")
-        .attr("text-anchor", "middle")
-        .text((d: any) => {
-          // Chia cho 1 tỷ và format số
-          const valueInBillions = d.data.value / 1000000000;
-          const formattedValue = new Intl.NumberFormat('en-US', {
-            minimumFractionDigits: 1,
-            maximumFractionDigits: 1
-          }).format(valueInBillions);
-          return `${formattedValue} tỷ`;
-        });
+      // Chỉ hiển thị giá trị nếu ô đủ lớn
+      if (cellArea >= 4000) {
+        // Giá trị cổ phiếu ở dưới tên
+        cell.append("text")
+          .attr("x", centerX)
+          .attr("y", centerY + Math.min(12, cellHeight * 0.15)) // Điều chỉnh vị trí theo chiều cao ô
+          .attr("fill", "#fff")
+          .attr("font-size", `${valueFontSize}px`)
+          .attr("text-anchor", "middle")
+          .text((d: any) => {
+            // Chia cho 1 tỷ và format số
+            const valueInBillions = d.data.value / 1000000000;
+            const formattedValue = new Intl.NumberFormat('en-US', {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1
+            }).format(valueInBillions);
+            
+            // Rút gọn định dạng cho các ô nhỏ hơn
+            if (cellArea < 8000) {
+              return `${formattedValue}`;
+            }
+            return `${formattedValue} tỷ`;
+          });
+      }
     });
   }, [dimensions, treemapData]);
 
