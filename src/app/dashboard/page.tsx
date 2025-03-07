@@ -272,7 +272,7 @@ export default function DashboardPage() {
         </div>
         <StockTreeMap 
           width={'100%'} 
-          height={400} 
+          height={500} 
           selectedIndex={selectedIndexCode}
           onIndexChange={handleTreemapIndexChange}
         />
@@ -284,7 +284,6 @@ export default function DashboardPage() {
         <SmartTradeRecommendations recommendations={stockRecommendations} />
         <div className="dashboard-bottom-section">
           <StockNews newsItems={newsItems} />
-          <InvestmentPerformance />
         </div>
       </div>
       <Chatbot />

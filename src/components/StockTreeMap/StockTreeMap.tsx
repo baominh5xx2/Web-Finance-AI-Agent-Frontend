@@ -85,13 +85,13 @@ interface StockTreeMapProps {
 
 export default function StockTreeMap({ 
   width = '100%', 
-  height = 800,
+  height = 400,
   selectedIndex = 'VNINDEX',
   onIndexChange
 }: StockTreeMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 1000, height: 800 });
+  const [dimensions, setDimensions] = useState({ width: 1000, height: 400 });
   const [treemapData, setTreemapData] = useState<TreemapData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -398,17 +398,15 @@ export default function StockTreeMap({
     const updateDimensions = () => {
       if (containerRef.current) {
         const { width } = containerRef.current.getBoundingClientRect();
-        // Tính toán chiều cao dựa trên viewport height
-        const viewportHeight = window.innerHeight;
-        const calculatedHeight = Math.max(600, viewportHeight - 300); // Tối thiểu 600px, tối đa là viewport height - 300px
-        setDimensions({ width, height: calculatedHeight });
+        // Sử dụng chiều cao được truyền vào từ props thay vì tính toán
+        setDimensions({ width, height });
       }
     };
 
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
+  }, [height]);
 
   // Fetch data when currentIndex changes
   useEffect(() => {
