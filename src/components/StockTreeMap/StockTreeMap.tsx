@@ -545,7 +545,18 @@ export default function StockTreeMap({
           .attr("font-size", `${valueFontSize}px`)
           .attr("text-anchor", "middle")
           .text((d: any) => {
-            // Kiểm tra nếu có displayValue và không phải NaN
+            // Ưu tiên hiển thị giá trị percentage_change
+            if (d.data.change !== undefined && !isNaN(d.data.change)) {
+              const changeValue = Number(d.data.change);
+              const formattedChange = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                signDisplay: 'always'
+              }).format(changeValue);
+              return `${formattedChange}%`;
+            }
+            
+            // Hiển thị displayValue nếu không có change
             if (d.data.displayValue && !isNaN(d.data.displayValue)) {
               const valueInBillions = d.data.displayValue / 1000000000;
               const formattedValue = new Intl.NumberFormat('en-US', {
@@ -558,17 +569,6 @@ export default function StockTreeMap({
                 return `${formattedValue}`;
               }
               return `${formattedValue} tỷ`;
-            }
-            
-            // Nếu có percentage_change, hiển thị nó
-            if (d.data.change !== undefined && !isNaN(d.data.change)) {
-              const changeValue = Number(d.data.change);
-              const formattedChange = new Intl.NumberFormat('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-                signDisplay: 'always'
-              }).format(changeValue);
-              return `${formattedChange}%`;
             }
             
             return ''; // Trả về chuỗi rỗng nếu không có giá trị hợp lệ
@@ -638,13 +638,9 @@ export default function StockTreeMap({
               color = '#eab308';
             }
             
-            // Sử dụng giá trị tuyệt đối của percentage_change để xác định kích thước ô
-            // và thêm một giá trị nhỏ để tránh ô có kích thước 0
-            const absolutePercentage = Math.abs(numericPercentage) + 0.01;
-            
             return {
               name: stock.symbol,
-              value: absolutePercentage * 1000, // Nhân với 1000 để tăng sự khác biệt về kích thước
+              value: stock.market_cap, // Sử dụng vốn hóa thị trường làm giá trị quyết định kích thước
               change: numericPercentage, // Lưu giá trị phần trăm thay đổi
               difference: numericDiff,
               color: color,
