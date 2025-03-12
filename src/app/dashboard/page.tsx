@@ -39,8 +39,8 @@ interface StockRecommendation {
 // Mapping giữa tên chỉ số và mã chỉ số
 const INDEX_CODE_MAP: Record<string, string> = {
   'VN-Index': 'VNINDEX',
-  'HNX': 'HNX',
-  'UPCOM': 'UPCOM',
+  'HNX': 'HNXINDEX',   // Changed from 'HNX' to 'HNXINDEX'
+  'UPCOM': 'UPCOMINDEX', // Changed from 'UPCOM' to 'UPCOMINDEX'
   'VN30': 'VN30',
   'HNX30': 'HNX30'
 };
@@ -48,8 +48,8 @@ const INDEX_CODE_MAP: Record<string, string> = {
 // Mapping ngược lại từ mã chỉ số sang tên chỉ số
 const INDEX_NAME_MAP: Record<string, string> = {
   'VNINDEX': 'VN-Index',
-  'HNX': 'HNX',
-  'UPCOM': 'UPCOM',
+  'HNXINDEX': 'HNX',   // Changed key from 'HNX' to 'HNXINDEX'
+  'UPCOMINDEX': 'UPCOM', // Changed key from 'UPCOM' to 'UPCOMINDEX'
   'VN30': 'VN30',
   'HNX30': 'HNX30'
 };
@@ -60,15 +60,6 @@ export default function DashboardPage() {
   const [selectedIndex, setSelectedIndex] = useState<string>('VN-Index');
   const [selectedIndexCode, setSelectedIndexCode] = useState<string>('VNINDEX');
   
-  // State for news items
-  const [newsItems] = useState([
-    {
-      title: 'Market Update',
-      date: '2024-01-20',
-      time: '09:00'
-    }
-  ]);
-
   // State for market data
   const [marketData, setMarketData] = useState({
     indexData: {
@@ -280,10 +271,11 @@ export default function DashboardPage() {
           indexData={marketData.indexData}  
           volumeData={marketData.volumeData}
           statistics={marketData.statistics}
+          currentSymbol={selectedIndexCode} // Pass the selected index code
         />
         <SmartTradeRecommendations recommendations={stockRecommendations} />
         <div className="dashboard-bottom-section">
-          <StockNews newsItems={newsItems} />
+          <StockNews />
         </div>
       </div>
       <Chatbot />

@@ -49,8 +49,8 @@ interface TreemapNode extends d3.HierarchyNode<TreemapData> {
 // Định nghĩa các chỉ số thị trường
 const MARKET_INDICES = [
   { id: 'VNINDEX', name: 'VN-Index' },
-  { id: 'HNX', name: 'HNX' },
-  { id: 'UPCOM', name: 'UPCOM' },
+  { id: 'HNXINDEX', name: 'HNX' },
+  { id: 'UPCOMINDEX', name: 'UPCOM' }, // Changed from 'UPCOM' to 'UPCOMINDEX'
   { id: 'VN30', name: 'VN30' },
   { id: 'HNX30', name: 'HNX30' }
 ];
@@ -58,8 +58,8 @@ const MARKET_INDICES = [
 // Mapping từ mã chỉ số sang API endpoint
 const INDEX_API_MAP: Record<string, string> = {
   'VNINDEX': 'HOSE',
-  'HNX': 'HNX',
-  'UPCOM': 'UPCOM',
+  'HNXINDEX': 'HNX',
+  'UPCOMINDEX': 'UPCOM',  // Changed to use 'UPCOMINDEX' as the key
   'VN30': 'VN30',
   'HNX30': 'HNX30'
 };
@@ -309,7 +309,7 @@ export default function StockTreeMap({
       
       // STEP 2: Nếu không có cache, mới gọi API
       console.log(`[Component] No valid cache found, calling backend API for ${indexCode}...`);
-      const apiIndex = INDEX_API_MAP[indexCode] || 'HOSE';
+      const apiIndex = INDEX_API_MAP[indexCode];
       
       // Gọi API lấy dữ liệu
       console.time("BackendAPICall");

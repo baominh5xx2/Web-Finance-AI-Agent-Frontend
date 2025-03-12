@@ -1,17 +1,20 @@
 'use client';
 
-import React from 'react';
-import { Box, Typography, styled } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, styled, CircularProgress } from '@mui/material';
 import './StockNews.css';
+import { newsService, NewsItem as ApiNewsItem } from '@/app/services/news';
 
-interface NewsItem {
+interface NewsItemUI {
   date: string;
   time: string;
   title: string;
+  symbol?: string;
 }
 
 interface StockNewsProps {
-  newsItems: NewsItem[];
+  symbol?: string; // Optional symbol prop to fetch news for a specific stock
+  newsItems?: NewsItemUI[]; // Optional pre-loaded news items
 }
 
 const NewsContainer = styled(Box)(({ theme }) => ({
@@ -75,74 +78,117 @@ const NewsTitleText = styled(Typography)(({ theme }) => ({
   },
 }));
 
-// Mẫu tin tức
-const dummyNewsItems: NewsItem[] = [
-  {
-    date: '27/02/2025',
-    time: '14:26',
-    title: 'VCB: Nghị quyết HĐQT về việc phê duyệt chủ trương thay đổi phương án phân phối lợi nhuận năm 2024'
-  },
-  {
-    date: '27/02/2025',
-    time: '14:19',
-    title: 'VCB: HĐQT phê duyệt chủ trương thực hiện mua bán nợ với VAMC'
-  },
-  {
-    date: '27/02/2025',
-    time: '14:19',
-    title: 'VCB: HĐQT phê duyệt chủ trương thực hiện giao dịch ủy thác chỉ định đầu tư với VCBF'
-  },
-  {
-    date: '26/02/2025',
-    time: '17:43',
-    title: 'VCB: Nghị quyết HĐQT về ngày ĐKCC phát hành cổ phiếu để tăng vốn từ nguồn vốn chủ sở hữu'
-  },
-  {
-    date: '26/02/2025',
-    time: '17:42',
-    title: 'VCB: Thông báo phát hành cổ phiếu để trả cổ tức'
-  },
-  {
-    date: '26/02/2025',
-    time: '17:29',
-    title: 'PLX: Nghị quyết HĐQT về việc giải thể Văn phòng đại diện tại Lào'
-  },
-  {
-    date: '26/02/2025',
-    time: '11:02',
-    title: 'Tỷ lệ LDR tăng và áp lực thanh khoản hệ thống ngân hàng'
-  },
-  {
-    date: '25/02/2025',
-    time: '17:17',
-    title: 'Khu đô thị Trảng Cát của KBC tăng vốn lên hơn 69 ngàn tỷ, đồng vốn lớn nhất Việt Nam'
-  },
-  {
-    date: '25/02/2025',
-    time: '09:02',
-    title: 'Cuộc đua lợi nhuận VN30: Vinhomes giữ vững ngôi vương'
-  }
-];
+const StockNews: React.FC<StockNewsProps> = ({ symbol, newsItems: initialNewsItems }) => {
+  const [newsItems, setNewsItems] = useState<NewsItemUI[]>(initialNewsItems || []);
+  const [loading, setLoading] = useState<boolean>(!initialNewsItems);
+  const [error, setError] = useState<string | null>(null);
 
-const StockNews: React.FC<StockNewsProps> = ({ newsItems = dummyNewsItems }) => {
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        let data;
+        
+        console.log('StockNews: Starting to fetch news data', { symbol });
+        
+        if (symbol) {
+          // Fetch news for specific symbol
+          console.log(`Fetching news for symbol: ${symbol}`);
+          const response = await newsService.getStockNews(symbol);
+          console.log('Got symbol news response:', response);
+          data = response.news;
+        } else {
+          // Fetch top news if no symbol provided
+          console.log('Fetching top news');
+          const response = await newsService.getTopNews();
+          console.log('Got top news response:', response);
+          data = response.news;
+        }
+        
+        console.log('News data before transform:', data);
+        
+        if (!data || data.length === 0) {
+          console.warn('Received empty news data');
+          setNewsItems([]);
+          setError('No news available');
+          setLoading(false);
+          return;
+        }
+        
+        // Transform API data format to component format
+        const transformedNews = data.map((item: ApiNewsItem) => {
+          console.log('Processing news item:', item);
+          
+          // Parse publish_date to get date and time
+          const [datePart = '', timePart = ''] = (item.publish_date || '').split(' ');
+          
+          // Format date to DD/MM/YYYY if needed
+          let formattedDate = datePart;
+          try {
+            const dateObj = new Date(datePart);
+            if (!isNaN(dateObj.getTime())) {
+              formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+            }
+          } catch (e) {
+            console.error('Error parsing date:', datePart, e);
+          }
+          
+          return {
+            date: formattedDate,
+            time: timePart || '',
+            title: item.title || 'No title',
+            symbol: item.symbol
+          };
+        });
+        
+        console.log('Transformed news data:', transformedNews);
+        setNewsItems(transformedNews);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch news:', err);
+        setError('Failed to load news data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!initialNewsItems) {
+      fetchNews();
+    }
+  }, [symbol, initialNewsItems]);
+
   return (
     <NewsContainer>
       <NewsTitle>Tin tức chứng khoán</NewsTitle>
-      <Box className="news-list">
-        {newsItems.map((item, index) => (
-          <NewsItem key={index}>
-            <NewsDate>
-              <Box className="date-icon">
-                <DateText>{item.date}</DateText>
-              </Box>
-              <TimeText>{item.time}</TimeText>
-            </NewsDate>
-            <NewsTitleText title={item.title}>
-              {item.title}
-            </NewsTitleText>
-          </NewsItem>
-        ))}
-      </Box>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Typography color="error" align="center">{error}</Typography>
+      ) : (
+        <Box className="news-list">
+          {newsItems.length > 0 ? (
+            newsItems.map((item, index) => (
+              <NewsItem key={index}>
+                <NewsDate>
+                  <Box className="date-icon">
+                    <DateText>{item.date}</DateText>
+                  </Box>
+                  <TimeText>{item.time}</TimeText>
+                </NewsDate>
+                <NewsTitleText title={item.title}>
+                  {item.title}
+                </NewsTitleText>
+              </NewsItem>
+            ))
+          ) : (
+            <Typography align="center" sx={{ py: 2 }}>
+              Không có tin tức nào
+            </Typography>
+          )}
+        </Box>
+      )}
     </NewsContainer>
   );
 };
