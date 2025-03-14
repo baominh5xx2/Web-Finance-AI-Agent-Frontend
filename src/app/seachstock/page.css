@@ -1,9 +1,9 @@
 .search-page-container {
   margin: 0;
   padding: 2rem;
-  margin-left: 200px;
-  max-width: calc(100% - 200px);
-}
+  margin-left: 200px !important;
+  max-width: calc(100% - 200px) !important;
+
 
 .search-container {
   display: flex;
@@ -135,6 +135,7 @@
 @media screen and (max-width: 768px) {
   .search-page-container {
     padding: 1rem;
+    margin-left: 200px;
   }
 
   .search-bar {
@@ -161,4 +162,4 @@
   .stock-details {
     grid-template-columns: 1fr;
   }
-}
+}}

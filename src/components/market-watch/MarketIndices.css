@@ -1,4 +1,6 @@
 .market-indices-container {
+  width: calc(100% - 50px) !important;
+  max-width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -8,7 +10,6 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   height: 100px;
-}
 
 .market-indices-scroll {
   display: flex;
@@ -37,14 +38,17 @@
   border: 1px solid rgba(0, 0, 0, 0.03);
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-top: 10px;
 }
 
 .market-index-card:hover {
+  margin-top: 10px;
   transform: translateY(-2px);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .market-index-card.selected {
+  margin-top: 10px;
   border: 2px solid #4f46e5;
   box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
   transform: translateY(-3px);
@@ -156,4 +160,4 @@
 .d3-area-chart-container {
   position: relative;
   overflow: visible;
-} 
+} }

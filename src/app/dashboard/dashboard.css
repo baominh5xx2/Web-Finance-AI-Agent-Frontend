@@ -457,7 +457,6 @@
 
 .market-indices-wrapper {
   width: 100%;
-  margin-bottom: 20px;
   background: white;
   border-radius: 8px;
   padding: 16px;
@@ -465,6 +464,7 @@
 }
 
 .market-indices-scroll {
+  width: 100%;
   display: flex;
   overflow-x: auto;
   gap: 16px;

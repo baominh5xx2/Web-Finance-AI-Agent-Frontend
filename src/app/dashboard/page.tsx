@@ -7,7 +7,6 @@ import StockTreeMap from '@/components/StockTreeMap/StockTreeMap';
 import MarketStatistics from '@/components/market-watch/MarketStatistics';
 import SmartTradeRecommendations from '@/components/smart-trade/SmartTradeRecommendations';
 import StockNews from '@/components/stock-news/StockNews';
-import InvestmentPerformance from '@/components/investment-performance/InvestmentPerformance';
 import Chatbot from '@/components/chatbot/chatbot'; // Import the Chatbot component
 import './dashboard.css';
 
