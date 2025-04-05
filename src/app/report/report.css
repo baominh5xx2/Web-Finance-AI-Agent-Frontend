@@ -39,6 +39,8 @@
   position: relative;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .search-input {
@@ -350,4 +352,109 @@
     padding: 1rem;
     min-height: 400px;
   }
+}
+
+.support-notice {
+  width: 100%;
+  max-width: 800px;
+  margin: 12px auto 0;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.support-notice p {
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* PDF Result Styles */
+.pdf-result {
+  max-width: 800px;
+  margin: 2rem auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+}
+
+.pdf-success {
+  margin-bottom: 2rem;
+}
+
+.success-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-icon svg {
+  width: 32px;
+  height: 32px;
+  stroke: white;
+}
+
+.pdf-success h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.pdf-success p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.pdf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 180px;
+}
+
+.action-button.download {
+  background-color: #2196F3;
+  color: white;
+}
+
+.action-button.download:hover {
+  background-color: #1976D2;
+}
+
+.action-button.view {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.action-button.view:hover {
+  background-color: #e0e0e0;
+}
+
+.action-button svg {
+  width: 20px;
+  height: 20px;
 }
