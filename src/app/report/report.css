@@ -106,10 +106,10 @@
 
 /* PDF Viewer */
 .pdf-container {
-  background-color: white;
-  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .pdf-controls {
@@ -147,16 +147,55 @@
   color: #64748b;
 }
 
+.pdf-info-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.pdf-total-pages {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.pdf-scroll-hint {
+  color: #6b7280;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.pdf-scroll-hint::before {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 14l-7 7m0 0l-7-7m7 7V3'%3E%3C/path%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 .pdf-viewer {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 2rem;
-  min-height: 600px;
   background-color: #f8fafc;
+  max-height: 800px;
+  overflow-y: auto;
 }
 
 .pdf-page {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.pdf-page:last-child {
+  margin-bottom: 0;
 }
 
 .pdf-info {
@@ -383,7 +422,7 @@
 }
 
 .pdf-success {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .success-icon {
@@ -411,6 +450,10 @@
 
 .pdf-success p {
   color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.pdf-actions {
   margin-bottom: 1.5rem;
 }
 
@@ -452,6 +495,15 @@
 
 .action-button.view:hover {
   background-color: #e0e0e0;
+}
+
+.action-button.view-inline {
+  background-color: #ff9800;
+  color: white;
+}
+
+.action-button.view-inline:hover {
+  background-color: #f57c00;
 }
 
 .action-button svg {

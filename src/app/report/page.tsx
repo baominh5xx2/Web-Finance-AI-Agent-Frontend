@@ -1,16 +1,29 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import './report.css';
 import { reportService } from '../services/report';
 
+// Cấu hình worker cho PDF.js bằng cách import trực tiếp
+// Sửa lỗi "Failed to fetch dynamically imported module"
+import 'pdfjs-dist/build/pdf.worker.mjs';
+
 export default function ReportPage() {
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [numPages, setNumPages] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Fixed stock symbol to NKG
   const fixedStockSymbol = 'NKG';
+
+  // Xử lý khi document được tải thành công
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    console.log("Document loaded successfully. Total pages:", numPages);
+    setNumPages(numPages);
+    setIsLoading(false);
+  }
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -103,7 +116,6 @@ export default function ReportPage() {
               </svg>
             </div>
             <h2>Báo cáo đã được tải thành công!</h2>
-            <p>Báo cáo cổ phiếu NKG đã sẵn sàng. Hãy tải xuống hoặc xem trực tiếp.</p>
           </div>
           
           <div className="pdf-actions">
@@ -119,8 +131,47 @@ export default function ReportPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              Xem báo cáo
+              Xem trong tab mới
             </button>
+          </div>
+          
+          <div className="pdf-container">
+            <div className="pdf-info-bar">
+              <span className="pdf-total-pages">
+                Tổng số trang: {numPages || '--'}
+              </span>
+              <span className="pdf-scroll-hint">
+                Kéo để xem toàn bộ báo cáo
+              </span>
+            </div>
+            
+            <div className="pdf-viewer">
+              {pdfBlob && (
+                <Document
+                  file={URL.createObjectURL(pdfBlob)}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  onLoadError={(err) => {
+                    console.error('PDF load error:', err);
+                    setError(`Không thể tải báo cáo PDF: ${err.message}`);
+                  }}
+                  loading={<div className="loading-spinner"></div>}
+                >
+                  {Array.from(
+                    new Array(numPages || 0),
+                    (el, index) => (
+                      <Page
+                        key={`page_${index + 1}`}
+                        pageNumber={index + 1}
+                        renderTextLayer={false}
+                        renderAnnotationLayer={false}
+                        className="pdf-page"
+                        width={750}
+                      />
+                    )
+                  )}
+                </Document>
+              )}
+            </div>
           </div>
         </div>
       )}
