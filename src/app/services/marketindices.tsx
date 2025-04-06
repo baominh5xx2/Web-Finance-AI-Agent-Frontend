@@ -84,7 +84,7 @@ export const fetchMultipleIndices = async (
 ): Promise<Record<string, MarketIndexData | null>> => {
   try {
     const response = await axios.get<MarketIndexResponse>(
-      `${API_BASE_URL}/api/v1/market/indices?top=${top}`
+      `${API_BASE_URL}/api/v2/market/indices?top=${top}`
     );
     
     const results: Record<string, MarketIndexData | null> = {};

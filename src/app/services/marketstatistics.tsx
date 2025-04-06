@@ -20,7 +20,7 @@ export const getMarketIndicesAdjustedData = async (
   symbol: string, 
   period: string
 ): Promise<MarketIndicesResponse> => {
-  const url = `${API_BASE_URL}/api/v1/market-adjust-indices/adjust-day/${symbol}/${period}`;
+  const url = `${API_BASE_URL}/api/v2/market-adjust-indices/adjust-day/${symbol}/${period}`;
   console.log(`Calling API: ${url}`);
   
   try {
