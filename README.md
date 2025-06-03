@@ -6,6 +6,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![D3.js](https://img.shields.io/badge/D3.js-F9A03C?style=for-the-badge&logo=d3.js)
+![React PDF](https://img.shields.io/badge/React_PDF-FF6B6B?style=for-the-badge&logo=adobe-acrobat-reader)
 
 *A cutting-edge financial analytics platform powered by AI for intelligent market analysis*
 
@@ -50,12 +51,7 @@ The **Finance AI Agent** is a sophisticated web application built with Next.js 1
 - **Language**: TypeScript for type safety
 - **Styling**: Tailwind CSS + Material-UI (MUI)
 - **Data Visualization**: D3.js for interactive charts
-- **PDF Processing**: react-pdf for document handling
-
-### **Backend & API**
-- **API Routes**: Next.js API routes for data management
-- **External APIs**: Integration with financial data providers
-- **Caching**: File-based caching system for performance optimization
+- **PDF Processing**: react-pdf for document handling and visualization
 
 ### **Development Tools**
 - **Linting**: ESLint for code quality
@@ -235,7 +231,6 @@ We welcome contributions! Please follow these steps:
 
 - [ ] Advanced AI analytics and predictions
 - [ ] Real-time portfolio tracking
-- [ ] Mobile app development
 - [ ] Additional market support (international markets)
 - [ ] Enhanced reporting features
 - [ ] WebSocket real-time updates
